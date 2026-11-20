@@ -1,0 +1,2961 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dartverein Kirchschlag – Vereinskalender</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS v2 Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Theme-Variablen für Dark Mode & Hell Mode -->
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg-page: #09090b;
+      --bg-surface: #18181b;
+      --bg-surface-2: #111114;
+      --bg-elevated: #27272a;
+      --border-subtle: #27272a;
+      --border-strong: #3f3f46;
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --input-bg: #09090b;
+      --backdrop: rgba(0, 0, 0, 0.72);
+      color-scheme: dark;
+    }
+
+    [data-theme="light"] {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-2: #f1f5f9;
+      --bg-elevated: #e2e8f0;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --input-bg: #ffffff;
+      --backdrop: rgba(15, 23, 42, 0.55);
+      color-scheme: light;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .theme-surface { background-color: var(--bg-surface); }
+    .theme-surface-2 { background-color: var(--bg-surface-2); }
+    .theme-border { border-color: var(--border-subtle); }
+    .theme-border-strong { border-color: var(--border-strong); }
+    .theme-text { color: var(--text-primary); }
+    .theme-text-secondary { color: var(--text-secondary); }
+    .theme-text-muted { color: var(--text-muted); }
+
+    .theme-input {
+      background-color: var(--input-bg);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .theme-btn-neutral {
+      background-color: var(--bg-surface);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .theme-btn-neutral:hover {
+      background-color: var(--bg-elevated);
+    }
+
+    .theme-backdrop {
+      background-color: var(--backdrop);
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .animate-modal {
+      animation: modalIn 0.16s ease-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased transition-colors duration-200">
+
+  <!-- ======================================================================
+       HEADER
+       ====================================================================== -->
+  <header class="sticky top-0 z-30 theme-surface border-b theme-border backdrop-blur-md transition-colors">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Vereinslogo & Titel -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white dark:text-zinc-950 flex items-center justify-center shadow-sm shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="5"></circle>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+            <line x1="12" y1="2" x2="12" y2="5"></line>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+            <line x1="2" y1="12" x2="5" y2="12"></line>
+            <line x1="19" y1="12" x2="22" y2="12"></line>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight theme-text truncate">
+            Dartverein Kirchschlag
+          </h1>
+          <p class="text-xs theme-text-secondary truncate">
+            Vereinskalender &bull; Liga, Turniere &amp; Dartraum
+          </p>
+        </div>
+      </div>
+
+      <!-- Aktionen: Ansicht, Theme-Umschalter & Kapitäns-Login -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- 4-fach Ansicht-Umschalter -->
+        <div class="inline-flex flex-wrap rounded-xl p-1 theme-surface-2 border theme-border">
+          <button type="button" id="viewListBtn" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all">
+            Liste
+          </button>
+          <button type="button" id="viewWeekBtn" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all">
+            Woche
+          </button>
+          <button type="button" id="viewMonthBtn" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all">
+            Monat
+          </button>
+          <button type="button" id="viewMembersBtn" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all">
+            Mitglieder
+          </button>
+        </div>
+
+        <!-- Dark/Hell Mode Umschalter -->
+        <button
+          type="button"
+          id="themeToggleBtn"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-semibold transition-all shrink-0"
+          aria-label="Design umschalten"
+        >
+          <svg id="themeToggleIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></svg>
+          <span id="themeToggleLabel" class="hidden sm:inline">Hell</span>
+        </button>
+
+        <!-- Kapitäns-Login Button -->
+        <button
+          type="button"
+          id="captainModeBtn"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-semibold transition-all shrink-0"
+        >
+          <svg id="captainLockIcon" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span id="captainBtnLabel">Kapitäns-Login</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       KAPITÄNS-STATUSLEISTE (Nur sichtbar, wenn via Supabase eingeloggt)
+       ====================================================================== -->
+  <div id="captainBanner" class="bg-emerald-50 text-emerald-950 border-b border-emerald-200 dark:bg-emerald-950/90 dark:text-emerald-100 dark:border-emerald-800/70 hidden transition-colors">
+    <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 ring-4 ring-emerald-500/25 shrink-0"></span>
+        <span>Kapitäns-Modus aktiv <span id="captainUserEmail" class="font-normal opacity-80"></span></span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          id="newEventBtn"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-sm transition-colors"
+        >
+          <span>+ Neuer Termin</span>
+        </button>
+        <button
+          type="button"
+          id="bannerNewMemberBtn"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-emerald-600/40 bg-white/80 hover:bg-white text-emerald-900 dark:bg-emerald-900/60 dark:hover:bg-emerald-800/80 dark:text-emerald-100 text-xs sm:text-sm font-bold transition-colors"
+        >
+          <span>+ Neues Mitglied</span>
+        </button>
+        <button
+          type="button"
+          id="logoutCaptainBtn"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white dark:bg-zinc-900/70 dark:hover:bg-zinc-800 border border-emerald-700/50 text-xs sm:text-sm font-semibold transition-colors"
+        >
+          Abmelden
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       HAUPTBEREICH
+       ====================================================================== -->
+  <main class="max-w-6xl w-full mx-auto px-4 py-5 flex-1">
+
+    <!-- HINWEIS-BANNER (z. B. Verbindungs- oder Ladefehler) -->
+    <div id="supabaseNoticeBanner" class="hidden mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium"></div>
+
+    <!-- NÄCHSTER GEBURTSTAG ANZEIGE (Startseite über Kalender-Ansichten) -->
+    <section
+      id="nextBirthdayBanner"
+      class="hidden mb-5 rounded-2xl border theme-border theme-surface px-4 py-3 shadow-sm transition-colors cursor-pointer hover:border-emerald-500/60"
+      title="Zur Mitgliederliste wechseln"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 flex items-center justify-center text-lg shrink-0">
+            🎂
+          </span>
+          <div class="min-w-0">
+            <div class="text-[11px] font-bold uppercase tracking-wider theme-text-muted">
+              Nächster Geburtstag:
+            </div>
+            <div id="nextBirthdayText" class="text-xs sm:text-sm font-extrabold theme-text"></div>
+          </div>
+        </div>
+        <span id="nextBirthdayCountdown" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 shrink-0"></span>
+      </div>
+    </section>
+
+    <!-- FILTER-BEREICH (Zweizeilig: Kategorien + Mannschaften + Schnellfilter) -->
+    <section id="calendarFilterSection" class="theme-surface border theme-border rounded-2xl p-4 mb-5 shadow-sm space-y-3.5 transition-colors">
+      <!-- Zeile 1: Kategorien -->
+      <div>
+        <div class="text-[11px] font-bold uppercase tracking-wider theme-text-muted mb-2">Kategorien</div>
+        <div id="categoryFilterBar" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <!-- Zeile 2: Mannschaften -->
+      <div class="pt-3 border-t theme-border">
+        <div class="text-[11px] font-bold uppercase tracking-wider theme-text-muted mb-2">Mannschaften</div>
+        <div id="teamFilterBar" class="flex flex-wrap items-center gap-y-2 gap-x-2"></div>
+      </div>
+
+      <!-- Schnellfilter -->
+      <div class="pt-3 border-t theme-border flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-4">
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-semibold theme-text">
+            <input type="checkbox" id="onlyDartraumToggle" class="w-4 h-4 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500" />
+            <span>Nur im Dartraum Kirchschlag</span>
+          </label>
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-semibold theme-text-secondary">
+            <input type="checkbox" id="showPastToggle" class="w-4 h-4 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500" />
+            <span>Vergangene Termine anzeigen</span>
+          </label>
+        </div>
+        <span id="activeCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full theme-surface-2 border theme-border theme-text-secondary">
+          0 Termine
+        </span>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         LISTENANSICHT
+         ==================================================================== -->
+    <section id="listViewSection">
+      <div id="listViewContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- ====================================================================
+         WOCHENANSICHT
+         ==================================================================== -->
+    <section id="weekViewSection" class="hidden space-y-4">
+      <div class="theme-surface border theme-border rounded-2xl overflow-hidden shadow-sm">
+        <div class="px-4 py-3 theme-surface-2 border-b theme-border flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="prevWeekBtn" class="p-2 rounded-xl border theme-btn-neutral transition-colors" aria-label="Vorherige Woche">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" id="todayWeekBtn" class="px-3 py-1.5 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-bold transition-colors">
+              Diese Woche
+            </button>
+            <button type="button" id="nextWeekBtn" class="p-2 rounded-xl border theme-btn-neutral transition-colors" aria-label="Nächste Woche">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <h2 id="calendarWeekTitle" class="text-sm sm:text-lg font-extrabold theme-text"></h2>
+        </div>
+
+        <div id="weekGrid" class="grid grid-cols-1 lg:grid-cols-7 divide-y lg:divide-y-0 lg:divide-x theme-border"></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         MONATSANSICHT
+         ==================================================================== -->
+    <section id="monthViewSection" class="hidden space-y-4">
+      <div class="theme-surface border theme-border rounded-2xl overflow-hidden shadow-sm">
+        <div class="px-4 py-3 theme-surface-2 border-b theme-border flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="prevMonthBtn" class="p-2 rounded-xl border theme-btn-neutral transition-colors" aria-label="Vorheriger Monat">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" id="todayMonthBtn" class="px-3 py-1.5 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-bold transition-colors">
+              Heute
+            </button>
+            <button type="button" id="nextMonthBtn" class="p-2 rounded-xl border theme-btn-neutral transition-colors" aria-label="Nächster Monat">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <h2 id="calendarMonthTitle" class="text-base sm:text-lg font-extrabold theme-text"></h2>
+        </div>
+
+        <div class="grid grid-cols-7 border-b theme-border theme-surface-2 text-center text-[11px] font-bold uppercase tracking-wider theme-text-muted">
+          <div class="py-2">Mo</div>
+          <div class="py-2">Di</div>
+          <div class="py-2">Mi</div>
+          <div class="py-2">Do</div>
+          <div class="py-2">Fr</div>
+          <div class="py-2">Sa</div>
+          <div class="py-2">So</div>
+        </div>
+
+        <div id="calendarGrid" class="grid grid-cols-7"></div>
+      </div>
+
+      <div class="theme-surface border theme-border rounded-2xl p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 id="selectedDayTitle" class="text-sm sm:text-base font-extrabold theme-text"></h3>
+            <span id="selectedDayRelativeBadge" class="hidden"></span>
+          </div>
+          <button
+            type="button"
+            id="addEventOnDayBtn"
+            class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-xs font-bold transition-colors"
+          >
+            + Termin an diesem Tag
+          </button>
+        </div>
+        <div id="selectedDayList" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         MITGLIEDER-ANSICHT
+         ==================================================================== -->
+    <section id="membersViewSection" class="hidden space-y-4">
+      <div class="theme-surface border theme-border rounded-2xl p-4 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold theme-text">Vereinsmitglieder</h2>
+            <p class="text-xs theme-text-secondary">Übersicht aller Mitglieder mit Mannschaften, Wohnort &amp; Geburtsdatum</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="membersCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full theme-surface-2 border theme-border theme-text-secondary">
+              0 Mitglieder
+            </span>
+            <button
+              type="button"
+              id="newMemberBtn"
+              class="hidden inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-sm transition-colors"
+            >
+              <span>+ Neues Mitglied</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Suche & Mannschafts-Filter für Mitglieder -->
+        <div class="space-y-3">
+          <input
+            type="search"
+            id="memberSearchInput"
+            placeholder="Nach Name, Ort oder Mannschaft suchen …"
+            class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider theme-text-muted mb-1.5">Nach Mannschaft filtern</div>
+            <div id="memberTeamFilterBar" class="flex flex-wrap items-center gap-y-2 gap-x-2"></div>
+          </div>
+        </div>
+
+        <div id="membersErrorBox" class="hidden rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/60 dark:border-amber-500/60 dark:text-amber-100 px-3.5 py-2.5 text-xs font-semibold"></div>
+
+        <div id="membersListContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-6 px-4 text-xs theme-text-muted border-t theme-border theme-surface-2 transition-colors">
+    <span>Dartverein Kirchschlag &bull; Vereinskalender &bull; Synchronisiert über Supabase</span>
+    <span id="realtimeStatusBadge" class="hidden ml-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      Echtzeit aktiv
+    </span>
+  </footer>
+
+  <!-- ======================================================================
+       MODAL 1: TERMINDETAILS
+       ====================================================================== -->
+  <div id="detailModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+    <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-modal">
+      <div class="px-5 py-4 theme-surface-2 border-b theme-border flex items-center justify-between">
+        <h2 id="detailModalTitle" class="text-base font-extrabold theme-text">Termindetails</h2>
+        <button type="button" data-close-modal="detailModal" class="p-1.5 rounded-lg theme-text-secondary hover:bg-slate-200/70 dark:hover:bg-zinc-800" aria-label="Schließen">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="detailModalBody" class="p-5 space-y-4 max-h-[70vh] overflow-y-auto"></div>
+      <div id="detailModalFooter" class="px-5 py-3.5 theme-surface-2 border-t theme-border flex flex-wrap items-center justify-between gap-2"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: TERMIN ERSTELLEN / BEARBEITEN (NUR KAPITÄNE)
+       ====================================================================== -->
+  <div id="formModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="formModalTitle">
+    <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-modal">
+      <div class="px-5 py-4 theme-surface-2 border-b theme-border flex items-center justify-between">
+        <h2 id="formModalTitle" class="text-base font-extrabold theme-text">Neuer Termin</h2>
+        <button type="button" data-close-modal="formModal" class="p-1.5 rounded-lg theme-text-secondary hover:bg-slate-200/70 dark:hover:bg-zinc-800" aria-label="Schließen">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="eventForm" novalidate>
+        <input type="hidden" id="eventIdInput" />
+        <div class="p-5 space-y-4 max-h-[72vh] overflow-y-auto">
+          <div id="formErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3.5 py-2.5 text-xs font-semibold"></div>
+          <div id="overlapWarningBox" class="hidden rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/70 dark:text-amber-100 px-3.5 py-2.5 text-xs font-semibold"></div>
+
+          <div>
+            <label for="titleInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Titel *</label>
+            <input type="text" id="titleInput" required placeholder="z. B. NDSO Heimmatch gegen DC Wiener Neustadt" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="categoryInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Kategorie *</label>
+              <select id="categoryInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="NDSO Ligamatch">NDSO Ligamatch</option>
+                <option value="BSDV Ligamatch">BSDV Ligamatch</option>
+                <option value="Turniere">Turniere</option>
+                <option value="Dartraum/Training">Dartraum/Training</option>
+                <option value="Sonstiges">Sonstiges</option>
+              </select>
+            </div>
+            <div>
+              <label for="teamInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Mannschaft (optional)</label>
+              <select id="teamInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">– Keine Mannschaft –</option>
+                <optgroup label="E-Dart / NDSO">
+                  <option value="DV Kig 2">DV Kig 2</option>
+                  <option value="DV Kig 3">DV Kig 3</option>
+                  <option value="DV Kig 4">DV Kig 4</option>
+                </optgroup>
+                <optgroup label="Steel Dart / BSDV">
+                  <option value="DV Steel 1">DV Steel 1</option>
+                  <option value="DV Steel 2">DV Steel 2</option>
+                  <option value="DV Steel 3">DV Steel 3</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="homeAwayInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Heim / Auswärts (optional)</label>
+              <select id="homeAwayInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="">– Keine Angabe –</option>
+                <option value="Heim">Heimspiel</option>
+                <option value="Auswärts">Auswärtsspiel</option>
+              </select>
+            </div>
+            <div>
+              <label for="opponentInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Gegner (optional)</label>
+              <input type="text" id="opponentInput" placeholder="z. B. DC Aspang" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div>
+              <label for="dateInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Datum *</label>
+              <input type="date" id="dateInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+              <label for="startTimeInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Beginn *</label>
+              <input type="time" id="startTimeInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+              <label for="endTimeInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Ende *</label>
+              <input type="time" id="endTimeInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+          </div>
+
+          <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-2.5">
+            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none text-sm font-semibold theme-text">
+              <input type="checkbox" id="inDartraumCheckbox" class="w-4 h-4 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500" checked />
+              <span>Findet im Dartraum Kirchschlag statt</span>
+            </label>
+            <div>
+              <label for="locationInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Ort / Adresse *</label>
+              <input type="text" id="locationInput" placeholder="Dartraum Kirchschlag" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60" />
+            </div>
+          </div>
+
+          <div>
+            <label for="notesInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Notizen / Details (optional)</label>
+            <textarea id="notesInput" rows="3" placeholder="Treffpunkt, Nenngeld, Hinweise für Spieler …" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+        </div>
+
+        <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
+          <button type="button" data-close-modal="formModal" class="px-4 py-2 rounded-xl border theme-btn-neutral text-sm font-semibold transition-colors">
+            Abbrechen
+          </button>
+          <button type="submit" id="eventSubmitBtn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-sm font-bold shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            Termin speichern
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3: KAPITÄNS-LOGIN (SUPABASE E-MAIL & PASSWORT)
+       ====================================================================== -->
+  <div id="loginModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-modal">
+      <div class="px-5 py-4 theme-surface-2 border-b theme-border flex items-center justify-between">
+        <h2 id="loginModalTitle" class="text-base font-extrabold theme-text">Kapitäns-Login</h2>
+        <button type="button" data-close-modal="loginModal" class="p-1.5 rounded-lg theme-text-secondary hover:bg-slate-200/70 dark:hover:bg-zinc-800" aria-label="Schließen">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="loginForm" novalidate>
+        <div class="p-5 space-y-3.5">
+          <div id="loginErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3 py-2 text-xs font-semibold"></div>
+          <div>
+            <label for="loginEmailInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">E-Mail-Adresse</label>
+            <input type="email" id="loginEmailInput" required autocomplete="email" placeholder="kapitaen@dartverein-kirchschlag.at" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+          </div>
+          <div>
+            <label for="loginPasswordInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Passwort</label>
+            <input type="password" id="loginPasswordInput" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+          </div>
+          <p class="text-xs theme-text-muted leading-relaxed">
+            Melde dich mit deinem Kapitäns-Zugang an, um Termine und Mitglieder anzulegen, zu bearbeiten oder zu löschen.
+          </p>
+        </div>
+        <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
+          <button type="button" data-close-modal="loginModal" class="px-4 py-2 rounded-xl border theme-btn-neutral text-sm font-semibold">
+            Abbrechen
+          </button>
+          <button type="submit" id="loginSubmitBtn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-sm font-bold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
+            Anmelden
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 4: BESTÄTIGUNGSDIALOG (Löschen – kein confirm())
+       ====================================================================== -->
+  <div id="confirmModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-modal">
+      <div class="px-5 py-4 theme-surface-2 border-b theme-border">
+        <h2 id="confirmModalTitle" class="text-base font-extrabold theme-text">Bestätigen</h2>
+      </div>
+      <div class="p-5">
+        <p id="confirmModalMessage" class="text-sm theme-text-secondary leading-relaxed"></p>
+      </div>
+      <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
+        <button type="button" data-close-modal="confirmModal" class="px-4 py-2 rounded-xl border theme-btn-neutral text-sm font-semibold">
+          Abbrechen
+        </button>
+        <button type="button" id="confirmModalActionBtn" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-sm">
+          Löschen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 5: MITGLIED ERSTELLEN / BEARBEITEN (NUR KAPITÄNE – MEHRFACHAUSWAHL)
+       ====================================================================== -->
+  <div id="memberFormModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="memberFormModalTitle">
+    <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-modal">
+      <div class="px-5 py-4 theme-surface-2 border-b theme-border flex items-center justify-between">
+        <h2 id="memberFormModalTitle" class="text-base font-extrabold theme-text">Neues Mitglied</h2>
+        <button type="button" data-close-modal="memberFormModal" class="p-1.5 rounded-lg theme-text-secondary hover:bg-slate-200/70 dark:hover:bg-zinc-800" aria-label="Schließen">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="memberForm" novalidate>
+        <input type="hidden" id="memberIdInput" />
+        <div class="p-5 space-y-4 max-h-[72vh] overflow-y-auto">
+          <div id="memberFormErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3.5 py-2.5 text-xs font-semibold leading-relaxed"></div>
+
+          <!-- Name -->
+          <div>
+            <label for="memberNameInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Name *</label>
+            <input type="text" id="memberNameInput" required placeholder="z. B. Max Mustermann" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+          </div>
+
+          <!-- Mannschaften (Checkbox-/Kachel-Mehrfachauswahl) -->
+          <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="block text-xs font-bold uppercase tracking-wide theme-text-secondary">Mannschaften (optional)</span>
+              <button
+                type="button"
+                id="clearMemberTeamsBtn"
+                class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline-offset-2 hover:underline"
+              >
+                Auswahl leeren
+              </button>
+            </div>
+            <div id="memberTeamsCheckboxGroup" class="space-y-3"></div>
+            <p class="text-[11px] theme-text-muted leading-snug">
+              Mehrfachauswahl möglich – oder alles abwählen, falls in keiner Mannschaft.
+            </p>
+          </div>
+
+          <!-- Ort & Geburtsdatum -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="memberLocationInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Ort (optional)</label>
+              <input type="text" id="memberLocationInput" placeholder="z. B. Kirchschlag" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+            </div>
+
+            <div>
+              <label for="memberBirthdateInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Geburtsdatum (optional)</label>
+              <input type="date" id="memberBirthdateInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+            </div>
+          </div>
+        </div>
+        <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
+          <button type="button" data-close-modal="memberFormModal" class="px-4 py-2 rounded-xl border theme-btn-neutral text-sm font-semibold transition-colors">
+            Abbrechen
+          </button>
+          <button type="submit" id="memberSubmitBtn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-sm font-bold shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            Mitglied speichern
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST-BENACHRICHTIGUNG -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-xl opacity-0 pointer-events-none transition-all duration-200"></div>
+
+  <!-- ======================================================================
+       JAVASCRIPT – ANWENDUNGSLOGIK, SUPABASE, REALTIME & THEME-STEUERUNG
+       ====================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ----------------------------------------------------------------------
+         SUPABASE-KONFIGURATION
+         ---------------------------------------------------------------------- */
+      const SUPABASE_URL = 'https://zvggfmtbcaylocylhqqc.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2Z2dmbXRiY2F5bG9jeWxocXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxODk3MjcsImV4cCI6MjExMDc2NTcyN30.vhWkSvCJ_QihJ9HTMyKKu5K-DQQ78JYLOCresOUxE1Q';
+      const TABLE_NAME = 'termine';
+      const MEMBERS_TABLE_NAME = 'mitglieder';
+
+      const THEME_STORAGE_KEY = 'dvk_kalender_theme';
+      const DARTRAUM_NAME = 'Dartraum Kirchschlag';
+
+      let supabaseClient = null;
+      try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (err) {
+        console.error('Supabase Client Initialisierung fehlgeschlagen:', err);
+      }
+
+      /* ----------------------------------------------------------------------
+         KATEGORIEN, MANNSCHAFTEN & FARBSCHEMA
+         ---------------------------------------------------------------------- */
+      const CATEGORIES = [
+        'NDSO Ligamatch',
+        'BSDV Ligamatch',
+        'Turniere',
+        'Dartraum/Training',
+        'Sonstiges'
+      ];
+
+      const TEAM_GROUPS = [
+        { label: 'E-Dart / NDSO', teams: ['DV Kig 2', 'DV Kig 3', 'DV Kig 4'] },
+        { label: 'Steel Dart / BSDV', teams: ['DV Steel 1', 'DV Steel 2', 'DV Steel 3'] }
+      ];
+
+      const CATEGORY_STYLES = {
+        'NDSO Ligamatch': {
+          badge: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40',
+          dot: 'bg-blue-500',
+          accent: 'border-l-blue-500'
+        },
+        'BSDV Ligamatch': {
+          badge: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40',
+          dot: 'bg-emerald-500',
+          accent: 'border-l-emerald-500'
+        },
+        'Turniere': {
+          badge: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40',
+          dot: 'bg-amber-500',
+          accent: 'border-l-amber-500'
+        },
+        'Dartraum/Training': {
+          badge: 'bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/40',
+          dot: 'bg-cyan-500',
+          accent: 'border-l-cyan-500'
+        },
+        'Sonstiges': {
+          badge: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/40',
+          dot: 'bg-violet-500',
+          accent: 'border-l-violet-500'
+        }
+      };
+
+      const MONTH_NAMES = [
+        'Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni',
+        'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+      ];
+
+      const WEEKDAY_LONG = [
+        'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'
+      ];
+
+      const WEEKDAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+      /* ----------------------------------------------------------------------
+         HILFSFUNKTION: MANNSCHAFTEN PARSEN (0, 1 ODER MEHRERE TEAMS)
+         ---------------------------------------------------------------------- */
+      function parseTeams(raw) {
+        if (!raw) return [];
+        const items = Array.isArray(raw) ? raw : String(raw).split(',');
+        const seen = new Set();
+        const result = [];
+        items.forEach((item) => {
+          const clean = String(item || '').trim();
+          if (clean && !seen.has(clean)) {
+            seen.add(clean);
+            result.push(clean);
+          }
+        });
+        return result;
+      }
+
+      /* ----------------------------------------------------------------------
+         DATENBANK-MAPPING & SUPABASE CRUD FÜR TERMINE
+         ---------------------------------------------------------------------- */
+      function mapRowToEvent(row) {
+        const isDartraum = Boolean(row.is_dartraum);
+        return {
+          id: row.id,
+          title: row.title || '',
+          category: row.category || 'Sonstiges',
+          team: row.team || '',
+          homeAway: row.home_away || '',
+          date: row.match_date || '',
+          startTime: (row.start_time || '').slice(0, 5),
+          endTime: (row.end_time || '').slice(0, 5),
+          inDartraum: isDartraum,
+          location: row.location || (isDartraum ? DARTRAUM_NAME : ''),
+          opponent: row.opponent || '',
+          notes: row.notes || ''
+        };
+      }
+
+      function mapEventToRow(evt) {
+        return {
+          title: evt.title,
+          category: evt.category,
+          team: evt.team || null,
+          home_away: evt.homeAway || null,
+          opponent: evt.opponent || null,
+          match_date: evt.date,
+          start_time: evt.startTime,
+          end_time: evt.endTime || null,
+          is_dartraum: Boolean(evt.inDartraum),
+          location: evt.inDartraum ? DARTRAUM_NAME : evt.location,
+          notes: evt.notes || null
+        };
+      }
+
+      async function loadEventsFromSupabase() {
+        if (!supabaseClient) return [];
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .select('*')
+          .order('match_date', { ascending: true })
+          .order('start_time', { ascending: true });
+
+        if (error) throw error;
+        return (data || []).map(mapRowToEvent);
+      }
+
+      async function createEventInSupabase(eventData) {
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .insert([mapEventToRow(eventData)])
+          .select()
+          .single();
+
+        if (error) throw error;
+        return mapRowToEvent(data);
+      }
+
+      async function updateEventInSupabase(id, eventData) {
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .update(mapEventToRow(eventData))
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return mapRowToEvent(data);
+      }
+
+      async function deleteEventInSupabase(id) {
+        const { error } = await supabaseClient
+          .from(TABLE_NAME)
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+      }
+
+      /* ----------------------------------------------------------------------
+         DATENBANK-MAPPING & SUPABASE CRUD FÜR MITGLIEDER
+         ---------------------------------------------------------------------- */
+      function mapRowToMember(row) {
+        const teams = parseTeams(row.mannschaft);
+        return {
+          id: row.id,
+          name: row.name || '',
+          teams,
+          mannschaft: teams.join(', '),
+          ort: row.ort || '',
+          geburtsdatum: row.geburtsdatum || ''
+        };
+      }
+
+      function mapMemberToRow(member) {
+        const cleanTeams = parseTeams(member.teams);
+        return {
+          name: member.name,
+          mannschaft: cleanTeams.length > 0 ? cleanTeams.join(', ') : null,
+          ort: member.ort || null,
+          geburtsdatum: member.geburtsdatum || null
+        };
+      }
+
+      async function loadMembersFromSupabase() {
+        if (!supabaseClient) return [];
+        const { data, error } = await supabaseClient
+          .from(MEMBERS_TABLE_NAME)
+          .select('*')
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        return (data || []).map(mapRowToMember);
+      }
+
+      async function createMemberInSupabase(memberData) {
+        const { data, error } = await supabaseClient
+          .from(MEMBERS_TABLE_NAME)
+          .insert([mapMemberToRow(memberData)])
+          .select()
+          .single();
+
+        if (error) throw error;
+        return mapRowToMember(data);
+      }
+
+      async function updateMemberInSupabase(id, memberData) {
+        const { data, error } = await supabaseClient
+          .from(MEMBERS_TABLE_NAME)
+          .update(mapMemberToRow(memberData))
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return mapRowToMember(data);
+      }
+
+      async function deleteMemberInSupabase(id) {
+        const { error } = await supabaseClient
+          .from(MEMBERS_TABLE_NAME)
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+      }
+
+      /* ----------------------------------------------------------------------
+         THEME-PERSISTENZ
+         ---------------------------------------------------------------------- */
+      function loadTheme() {
+        try {
+          const saved = localStorage.getItem(THEME_STORAGE_KEY);
+          return saved === 'light' ? 'light' : 'dark';
+        } catch (_err) {
+          return 'dark';
+        }
+      }
+
+      function saveTheme(theme) {
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (_err) {
+          // Ignorieren, falls Storage gesperrt ist
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         HILFSFUNKTIONEN (DATUM, ZEIT-BADGES, GEBURTSTAGE, ICS)
+         ---------------------------------------------------------------------- */
+      function pad2(num) {
+        return String(num).padStart(2, '0');
+      }
+
+      function dateToISO(d) {
+        return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      }
+
+      function getTodayISO() {
+        return dateToISO(new Date());
+      }
+
+      function parseISODate(iso) {
+        const parts = (iso || '').split('-').map(Number);
+        return new Date(parts[0] || 2026, (parts[1] || 1) - 1, parts[2] || 1);
+      }
+
+      function addDaysISO(iso, days) {
+        const d = parseISODate(iso);
+        d.setDate(d.getDate() + days);
+        return dateToISO(d);
+      }
+
+      function getMondayISO(iso) {
+        const d = parseISODate(iso);
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        return dateToISO(d);
+      }
+
+      function getISOWeekNumber(iso) {
+        const d = parseISODate(iso);
+        const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = utc.getUTCDay() || 7;
+        utc.setUTCDate(utc.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+        return Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
+      }
+
+      function formatDateLong(iso) {
+        const d = parseISODate(iso);
+        return `${WEEKDAY_LONG[d.getDay()]}, ${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+      }
+
+      function formatDateShort(iso) {
+        const d = parseISODate(iso);
+        return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+      }
+
+      function formatDayMonth(iso) {
+        const d = parseISODate(iso);
+        return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.`;
+      }
+
+      function getRelativeDateBadge(dateISO) {
+        if (!dateISO) return null;
+        if (dateISO === todayISO) {
+          return {
+            label: 'HEUTE',
+            cls: 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950'
+          };
+        }
+        if (dateISO === tomorrowISO) {
+          return {
+            label: 'MORGEN',
+            cls: 'bg-sky-600 text-white dark:bg-sky-500 dark:text-zinc-950'
+          };
+        }
+        if (dateISO > tomorrowISO && dateISO <= currentWeekEndISO) {
+          return {
+            label: 'DIESE WOCHE',
+            cls: 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40'
+          };
+        }
+        return null;
+      }
+
+      function getNextBirthdayInfo(birthISO) {
+        if (!birthISO || !birthISO.includes('-')) return null;
+        const [birthYear, birthMonth, birthDay] = birthISO.split('-').map(Number);
+        if (!birthYear || !birthMonth || !birthDay) return null;
+
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        function makeBirthdayDate(year) {
+          const candidate = new Date(year, birthMonth - 1, birthDay);
+          if (birthMonth === 2 && birthDay === 29 && candidate.getMonth() !== 1) {
+            return new Date(year, 1, 28);
+          }
+          return candidate;
+        }
+
+        let targetYear = todayMidnight.getFullYear();
+        let nextBday = makeBirthdayDate(targetYear);
+        if (nextBday < todayMidnight) {
+          targetYear += 1;
+          nextBday = makeBirthdayDate(targetYear);
+        }
+
+        const daysUntil = Math.round((nextBday - todayMidnight) / 86400000);
+        const turningAge = targetYear - birthYear;
+        const currentAge = daysUntil === 0 ? turningAge : turningAge - 1;
+
+        return {
+          daysUntil,
+          turningAge,
+          currentAge,
+          dateLabel: `${pad2(birthDay)}.${pad2(birthMonth)}.`,
+          nextDateObj: nextBday
+        };
+      }
+
+      function getUpcomingBirthdays(members) {
+        let minDays = Infinity;
+        let upcoming = [];
+
+        members.forEach((m) => {
+          const info = getNextBirthdayInfo(m.geburtsdatum);
+          if (!info) return;
+          if (info.daysUntil < minDays) {
+            minDays = info.daysUntil;
+            upcoming = [{ member: m, info }];
+          } else if (info.daysUntil === minDays) {
+            upcoming.push({ member: m, info });
+          }
+        });
+
+        return upcoming;
+      }
+
+      function timeToMinutes(hhmm) {
+        if (!hhmm || !hhmm.includes(':')) return 0;
+        const [h, m] = hhmm.split(':').map(Number);
+        return (h || 0) * 60 + (m || 0);
+      }
+
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getCategoryStyle(category) {
+        return CATEGORY_STYLES[category] || CATEGORY_STYLES['Sonstiges'];
+      }
+
+      function getTeamBadgeStyle(team) {
+        if (!team) return '';
+        if (team.startsWith('DV Steel')) {
+          return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40';
+        }
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40';
+      }
+
+      function findDartraumOverlaps(candidate, excludeId) {
+        if (!candidate.inDartraum || !candidate.date || !candidate.startTime || !candidate.endTime) {
+          return [];
+        }
+        const startA = timeToMinutes(candidate.startTime);
+        const endA = timeToMinutes(candidate.endTime);
+        if (endA <= startA) return [];
+
+        return state.events.filter((other) => {
+          if (excludeId && String(other.id) === String(excludeId)) return false;
+          if (!other.inDartraum || other.date !== candidate.date) return false;
+          const startB = timeToMinutes(other.startTime);
+          const endB = timeToMinutes(other.endTime);
+          return startA < endB && endA > startB;
+        });
+      }
+
+      function downloadEventICS(evt) {
+        const dateClean = (evt.date || '').replace(/-/g, '');
+        const startClean = (evt.startTime || '00:00').replace(':', '') + '00';
+        const endClean = (evt.endTime || '01:00').replace(':', '') + '00';
+        const now = new Date();
+        const stamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}Z`;
+
+        const descParts = [`Kategorie: ${evt.category}`];
+        if (evt.team) descParts.push(`Mannschaft: ${evt.team}`);
+        if (evt.homeAway) descParts.push(`Spielort: ${evt.homeAway}`);
+        if (evt.opponent) descParts.push(`Gegner: ${evt.opponent}`);
+        if (evt.notes) descParts.push(`Notizen: ${evt.notes}`);
+
+        const icsEscape = (val) =>
+          String(val || '')
+            .replace(/\\/g, '\\\\')
+            .replace(/\n/g, '\\n')
+            .replace(/,/g, '\\,')
+            .replace(/;/g, '\\;');
+
+        const lines = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Dartverein Kirchschlag//Vereinskalender//DE',
+          'BEGIN:VEVENT',
+          `UID:${evt.id || Date.now()}@dartverein-kirchschlag.at`,
+          `DTSTAMP:${stamp}`,
+          `DTSTART:${dateClean}T${startClean}`,
+          `DTEND:${dateClean}T${endClean}`,
+          `SUMMARY:${icsEscape(evt.title)}`,
+          `LOCATION:${icsEscape(evt.location)}`,
+          `DESCRIPTION:${icsEscape(descParts.join('\n'))}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ];
+
+        const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dvk-${evt.date || 'termin'}.ics`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Kalenderdatei (.ics) heruntergeladen');
+      }
+
+      /* ----------------------------------------------------------------------
+         ANWENDUNGSZUSTAND (STATE)
+         ---------------------------------------------------------------------- */
+      const todayISO = getTodayISO();
+      const tomorrowISO = addDaysISO(todayISO, 1);
+      const currentWeekStartISO = getMondayISO(todayISO);
+      const currentWeekEndISO = addDaysISO(currentWeekStartISO, 6);
+
+      const state = {
+        theme: loadTheme(),
+        events: [],
+        loading: true,
+        loadError: null,
+        members: [],
+        membersLoading: true,
+        membersError: null,
+        memberSearch: '',
+        memberTeamFilter: 'all', // 'all' | 'none' | Teamname
+        realtimeConnected: false,
+        view: 'list',
+        categoryFilter: 'all',
+        teamFilter: 'all',
+        onlyDartraum: false,
+        showPast: false,
+        captainMode: false,
+        captainUser: null,
+        currentYear: Number(todayISO.slice(0, 4)),
+        currentMonth: Number(todayISO.slice(5, 7)) - 1,
+        weekStartDate: currentWeekStartISO,
+        selectedDate: todayISO,
+        confirmCallback: null,
+        toastTimer: null
+      };
+
+      /* ----------------------------------------------------------------------
+         DOM-REFERENZEN
+         ---------------------------------------------------------------------- */
+      const els = {
+        viewListBtn: document.getElementById('viewListBtn'),
+        viewWeekBtn: document.getElementById('viewWeekBtn'),
+        viewMonthBtn: document.getElementById('viewMonthBtn'),
+        viewMembersBtn: document.getElementById('viewMembersBtn'),
+        themeToggleBtn: document.getElementById('themeToggleBtn'),
+        themeToggleIcon: document.getElementById('themeToggleIcon'),
+        themeToggleLabel: document.getElementById('themeToggleLabel'),
+        captainModeBtn: document.getElementById('captainModeBtn'),
+        captainLockIcon: document.getElementById('captainLockIcon'),
+        captainBtnLabel: document.getElementById('captainBtnLabel'),
+        captainBanner: document.getElementById('captainBanner'),
+        captainUserEmail: document.getElementById('captainUserEmail'),
+        newEventBtn: document.getElementById('newEventBtn'),
+        bannerNewMemberBtn: document.getElementById('bannerNewMemberBtn'),
+        logoutCaptainBtn: document.getElementById('logoutCaptainBtn'),
+        supabaseNoticeBanner: document.getElementById('supabaseNoticeBanner'),
+        nextBirthdayBanner: document.getElementById('nextBirthdayBanner'),
+        nextBirthdayText: document.getElementById('nextBirthdayText'),
+        nextBirthdayCountdown: document.getElementById('nextBirthdayCountdown'),
+        calendarFilterSection: document.getElementById('calendarFilterSection'),
+        realtimeStatusBadge: document.getElementById('realtimeStatusBadge'),
+
+        categoryFilterBar: document.getElementById('categoryFilterBar'),
+        teamFilterBar: document.getElementById('teamFilterBar'),
+        onlyDartraumToggle: document.getElementById('onlyDartraumToggle'),
+        showPastToggle: document.getElementById('showPastToggle'),
+        activeCountBadge: document.getElementById('activeCountBadge'),
+
+        listViewSection: document.getElementById('listViewSection'),
+        listViewContainer: document.getElementById('listViewContainer'),
+
+        weekViewSection: document.getElementById('weekViewSection'),
+        calendarWeekTitle: document.getElementById('calendarWeekTitle'),
+        prevWeekBtn: document.getElementById('prevWeekBtn'),
+        todayWeekBtn: document.getElementById('todayWeekBtn'),
+        nextWeekBtn: document.getElementById('nextWeekBtn'),
+        weekGrid: document.getElementById('weekGrid'),
+
+        monthViewSection: document.getElementById('monthViewSection'),
+        calendarMonthTitle: document.getElementById('calendarMonthTitle'),
+        prevMonthBtn: document.getElementById('prevMonthBtn'),
+        todayMonthBtn: document.getElementById('todayMonthBtn'),
+        nextMonthBtn: document.getElementById('nextMonthBtn'),
+        calendarGrid: document.getElementById('calendarGrid'),
+        selectedDayTitle: document.getElementById('selectedDayTitle'),
+        selectedDayRelativeBadge: document.getElementById('selectedDayRelativeBadge'),
+        addEventOnDayBtn: document.getElementById('addEventOnDayBtn'),
+        selectedDayList: document.getElementById('selectedDayList'),
+
+        membersViewSection: document.getElementById('membersViewSection'),
+        membersCountBadge: document.getElementById('membersCountBadge'),
+        newMemberBtn: document.getElementById('newMemberBtn'),
+        memberSearchInput: document.getElementById('memberSearchInput'),
+        memberTeamFilterBar: document.getElementById('memberTeamFilterBar'),
+        membersErrorBox: document.getElementById('membersErrorBox'),
+        membersListContainer: document.getElementById('membersListContainer'),
+
+        detailModal: document.getElementById('detailModal'),
+        detailModalBody: document.getElementById('detailModalBody'),
+        detailModalFooter: document.getElementById('detailModalFooter'),
+
+        formModal: document.getElementById('formModal'),
+        formModalTitle: document.getElementById('formModalTitle'),
+        eventForm: document.getElementById('eventForm'),
+        eventSubmitBtn: document.getElementById('eventSubmitBtn'),
+        formErrorBox: document.getElementById('formErrorBox'),
+        overlapWarningBox: document.getElementById('overlapWarningBox'),
+        eventIdInput: document.getElementById('eventIdInput'),
+        titleInput: document.getElementById('titleInput'),
+        categoryInput: document.getElementById('categoryInput'),
+        teamInput: document.getElementById('teamInput'),
+        homeAwayInput: document.getElementById('homeAwayInput'),
+        opponentInput: document.getElementById('opponentInput'),
+        dateInput: document.getElementById('dateInput'),
+        startTimeInput: document.getElementById('startTimeInput'),
+        endTimeInput: document.getElementById('endTimeInput'),
+        inDartraumCheckbox: document.getElementById('inDartraumCheckbox'),
+        locationInput: document.getElementById('locationInput'),
+        notesInput: document.getElementById('notesInput'),
+
+        loginModal: document.getElementById('loginModal'),
+        loginForm: document.getElementById('loginForm'),
+        loginEmailInput: document.getElementById('loginEmailInput'),
+        loginPasswordInput: document.getElementById('loginPasswordInput'),
+        loginErrorBox: document.getElementById('loginErrorBox'),
+        loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+
+        confirmModal: document.getElementById('confirmModal'),
+        confirmModalTitle: document.getElementById('confirmModalTitle'),
+        confirmModalMessage: document.getElementById('confirmModalMessage'),
+        confirmModalActionBtn: document.getElementById('confirmModalActionBtn'),
+
+        memberFormModal: document.getElementById('memberFormModal'),
+        memberFormModalTitle: document.getElementById('memberFormModalTitle'),
+        memberForm: document.getElementById('memberForm'),
+        memberIdInput: document.getElementById('memberIdInput'),
+        memberFormErrorBox: document.getElementById('memberFormErrorBox'),
+        memberNameInput: document.getElementById('memberNameInput'),
+        memberTeamsCheckboxGroup: document.getElementById('memberTeamsCheckboxGroup'),
+        clearMemberTeamsBtn: document.getElementById('clearMemberTeamsBtn'),
+        memberLocationInput: document.getElementById('memberLocationInput'),
+        memberBirthdateInput: document.getElementById('memberBirthdateInput'),
+        memberSubmitBtn: document.getElementById('memberSubmitBtn'),
+
+        toast: document.getElementById('toast')
+      };
+
+      /* ----------------------------------------------------------------------
+         TOAST-MELDUNG
+         ---------------------------------------------------------------------- */
+      function showToast(message) {
+        els.toast.textContent = message;
+        els.toast.classList.remove('opacity-0', 'pointer-events-none');
+        els.toast.classList.add('opacity-100');
+        clearTimeout(state.toastTimer);
+        state.toastTimer = setTimeout(() => {
+          els.toast.classList.add('opacity-0', 'pointer-events-none');
+          els.toast.classList.remove('opacity-100');
+        }, 2800);
+      }
+
+      /* ----------------------------------------------------------------------
+         THEME ANWENDEN (Dark Mode / Hell Mode)
+         WICHTIG: Bei SVG setAttribute('class', ...) statt .className!
+         ---------------------------------------------------------------------- */
+      function applyTheme(theme) {
+        state.theme = theme;
+        const root = document.documentElement;
+        root.setAttribute('data-theme', theme);
+        root.classList.toggle('dark', theme === 'dark');
+        saveTheme(theme);
+
+        if (theme === 'dark') {
+          els.themeToggleLabel.textContent = 'Hell';
+          els.themeToggleIcon.setAttribute('class', 'w-4 h-4 text-amber-400');
+          els.themeToggleIcon.innerHTML = `
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="2" x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line>
+            <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="4" y2="12"></line>
+            <line x1="20" y1="12" x2="22" y2="12"></line>
+            <line x1="6.34" y1="17.66" x2="4.93" y2="19.07"></line>
+            <line x1="19.07" y1="4.93" x2="17.66" y2="6.34"></line>
+          `;
+        } else {
+          els.themeToggleLabel.textContent = 'Dunkel';
+          els.themeToggleIcon.setAttribute('class', 'w-4 h-4 text-slate-700');
+          els.themeToggleIcon.innerHTML = `
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          `;
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         FILTERLOGIK FÜR TERMINE
+         ---------------------------------------------------------------------- */
+      function getFilteredEvents(applyPastFilter) {
+        return state.events
+          .filter((evt) => {
+            if (state.categoryFilter !== 'all' && evt.category !== state.categoryFilter) return false;
+            if (state.teamFilter !== 'all' && evt.team !== state.teamFilter) return false;
+            if (state.onlyDartraum && !evt.inDartraum) return false;
+            if (applyPastFilter && !state.showPast && evt.date < todayISO) return false;
+            return true;
+          })
+          .sort((a, b) => {
+            if (a.date !== b.date) return a.date.localeCompare(b.date);
+            return a.startTime.localeCompare(b.startTime);
+          });
+      }
+
+      /* ----------------------------------------------------------------------
+         RENDERING: HINWEISE, HEADER, GEBURTSTAG, FILTER & KAPITÄNS-UI
+         ---------------------------------------------------------------------- */
+      function renderNoticeBanner() {
+        if (!supabaseClient) {
+          els.supabaseNoticeBanner.className =
+            'mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm bg-amber-50 border-amber-300 text-amber-950 dark:bg-amber-950/60 dark:border-amber-500/60 dark:text-amber-100';
+          els.supabaseNoticeBanner.innerHTML =
+            '<strong>Supabase-Client konnte nicht geladen werden:</strong> Bitte Internetverbindung prüfen.';
+          els.supabaseNoticeBanner.classList.remove('hidden');
+        } else if (state.loadError) {
+          els.supabaseNoticeBanner.className =
+            'mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm bg-red-50 border-red-300 text-red-900 dark:bg-red-950/70 dark:border-red-700/80 dark:text-red-200';
+          els.supabaseNoticeBanner.innerHTML =
+            `<strong>Fehler beim Laden der Termine:</strong> ${escapeHtml(state.loadError)}`;
+          els.supabaseNoticeBanner.classList.remove('hidden');
+        } else {
+          els.supabaseNoticeBanner.classList.add('hidden');
+        }
+      }
+
+      function renderCaptainUI() {
+        els.captainBanner.classList.toggle('hidden', !state.captainMode);
+        els.addEventOnDayBtn.classList.toggle('hidden', !state.captainMode);
+        els.newMemberBtn.classList.toggle('hidden', !state.captainMode);
+        els.captainUserEmail.textContent = state.captainUser?.email ? `(${state.captainUser.email})` : '';
+
+        if (state.captainMode) {
+          els.captainModeBtn.className =
+            'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-emerald-600 bg-emerald-600 hover:bg-emerald-700 text-white dark:border-emerald-400 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-zinc-950 text-xs sm:text-sm font-bold transition-all shrink-0 shadow-sm';
+          els.captainBtnLabel.textContent = 'Kapitän aktiv';
+          els.captainLockIcon.innerHTML = `
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+          `;
+        } else {
+          els.captainModeBtn.className =
+            'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-semibold transition-all shrink-0';
+          els.captainBtnLabel.textContent = 'Kapitäns-Login';
+          els.captainLockIcon.innerHTML = `
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          `;
+        }
+      }
+
+      function renderViewButtons() {
+        const activeCls = 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950 shadow-sm';
+        const idleCls = 'theme-text-secondary hover:theme-text';
+
+        els.viewListBtn.className = `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${state.view === 'list' ? activeCls : idleCls}`;
+        els.viewWeekBtn.className = `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${state.view === 'week' ? activeCls : idleCls}`;
+        els.viewMonthBtn.className = `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${state.view === 'month' ? activeCls : idleCls}`;
+        els.viewMembersBtn.className = `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${state.view === 'members' ? activeCls : idleCls}`;
+
+        const isMembersView = state.view === 'members';
+        els.calendarFilterSection.classList.toggle('hidden', isMembersView);
+        els.listViewSection.classList.toggle('hidden', state.view !== 'list');
+        els.weekViewSection.classList.toggle('hidden', state.view !== 'week');
+        els.monthViewSection.classList.toggle('hidden', state.view !== 'month');
+        els.membersViewSection.classList.toggle('hidden', !isMembersView);
+      }
+
+      function renderNextBirthdayBanner() {
+        if (state.view === 'members') {
+          els.nextBirthdayBanner.classList.add('hidden');
+          return;
+        }
+        const upcoming = getUpcomingBirthdays(state.members);
+        if (upcoming.length === 0) {
+          els.nextBirthdayBanner.classList.add('hidden');
+          return;
+        }
+
+        const firstInfo = upcoming[0].info;
+        const namesText = upcoming
+          .map(({ member, info }) => `${member.name}${info.turningAge > 0 ? ` (${info.turningAge})` : ''}`)
+          .join(' & ');
+
+        if (firstInfo.daysUntil === 0) {
+          els.nextBirthdayText.textContent = `Heute feiert ${namesText} Geburtstag! 🎉`;
+          els.nextBirthdayCountdown.textContent = 'HEUTE!';
+          els.nextBirthdayCountdown.className =
+            'px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950 shrink-0';
+        } else {
+          const dayWord = firstInfo.daysUntil === 1 ? 'Morgen' : `in ${firstInfo.daysUntil} Tagen`;
+          els.nextBirthdayText.textContent = `${namesText} am ${firstInfo.dateLabel}`;
+          els.nextBirthdayCountdown.textContent = dayWord;
+          els.nextBirthdayCountdown.className =
+            'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 shrink-0';
+        }
+
+        els.nextBirthdayBanner.classList.remove('hidden');
+      }
+
+      function buildTeamFilterHtml(activeTeam, dataAttr, options) {
+        const opts = options || {};
+        const allLabel = opts.allLabel || 'Alle Teams';
+        const includeNone = Boolean(opts.includeNone);
+
+        const activeBtnCls = 'bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-500 dark:text-zinc-950 dark:border-emerald-400 shadow-sm';
+
+        let html = `
+          <button
+            type="button"
+            ${dataAttr}="all"
+            class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+              activeTeam === 'all' ? activeBtnCls : 'theme-btn-neutral'
+            }"
+          >
+            ${escapeHtml(allLabel)}
+          </button>
+        `;
+
+        if (includeNone) {
+          html += `
+            <button
+              type="button"
+              ${dataAttr}="none"
+              class="px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                activeTeam === 'none' ? activeBtnCls : 'theme-btn-neutral'
+              }"
+            >
+              Ohne Mannschaft
+            </button>
+          `;
+        }
+
+        TEAM_GROUPS.forEach((group) => {
+          const buttons = group.teams
+            .map((team) => {
+              const isActive = activeTeam === team;
+              return `
+                <button
+                  type="button"
+                  ${dataAttr}="${escapeHtml(team)}"
+                  class="px-2.5 py-1 rounded-lg border text-xs font-bold transition-all ${
+                    isActive ? activeBtnCls : 'theme-btn-neutral'
+                  }"
+                >
+                  ${escapeHtml(team)}
+                </button>
+              `;
+            })
+            .join('');
+
+          html += `
+            <div class="inline-flex flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-xl theme-surface-2 border theme-border">
+              <span class="text-[11px] font-bold theme-text-muted pr-1">${escapeHtml(group.label)}:</span>
+              ${buttons}
+            </div>
+          `;
+        });
+
+        return html;
+      }
+
+      function renderFilterPills() {
+        const catItems = [{ value: 'all', label: 'Alle Kategorien' }, ...CATEGORIES.map((c) => ({ value: c, label: c }))];
+        els.categoryFilterBar.innerHTML = catItems
+          .map((item) => {
+            const isActive = state.categoryFilter === item.value;
+            const style = item.value !== 'all' ? getCategoryStyle(item.value) : null;
+            const dotHtml = style ? `<span class="w-2 h-2 rounded-full ${style.dot}"></span>` : '';
+            const cls = isActive
+              ? 'bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-500 dark:text-zinc-950 dark:border-emerald-400 shadow-sm'
+              : 'theme-btn-neutral';
+            return `
+              <button
+                type="button"
+                data-cat-filter="${escapeHtml(item.value)}"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${cls}"
+              >
+                ${dotHtml}
+                <span>${escapeHtml(item.label)}</span>
+              </button>
+            `;
+          })
+          .join('');
+
+        els.teamFilterBar.innerHTML = buildTeamFilterHtml(state.teamFilter, 'data-team-filter', {
+          allLabel: 'Alle Teams',
+          includeNone: false
+        });
+      }
+
+      /* ----------------------------------------------------------------------
+         TERMINKARTE ERZEUGEN
+         ---------------------------------------------------------------------- */
+      function buildEventCardHtml(evt) {
+        const style = getCategoryStyle(evt.category);
+        const overlaps = findDartraumOverlaps(evt, evt.id);
+        const isPast = evt.date < todayISO;
+
+        const teamBadge = evt.team
+          ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>`
+          : '';
+
+        const homeAwayBadge = evt.homeAway
+          ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${
+              evt.homeAway === 'Heim'
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'
+            }">${escapeHtml(evt.homeAway)}</span>`
+          : '';
+
+        const overlapBadge = overlaps.length > 0
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-600/60">
+               ⚠ Überschneidung im Dartraum
+             </span>`
+          : '';
+
+        const captainControls = state.captainMode
+          ? `
+            <div class="flex items-center gap-1.5 pt-2 sm:pt-0 sm:pl-3">
+              <button type="button" data-edit-event="${escapeHtml(evt.id)}" class="px-2.5 py-1.5 rounded-lg border theme-btn-neutral text-xs font-semibold">
+                Bearbeiten
+              </button>
+              <button type="button" data-delete-event="${escapeHtml(evt.id)}" class="px-2.5 py-1.5 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/70 text-xs font-semibold">
+                Löschen
+              </button>
+            </div>
+          `
+          : '';
+
+        const timeLabel = evt.endTime
+          ? `${escapeHtml(evt.startTime)} – ${escapeHtml(evt.endTime)} Uhr`
+          : `${escapeHtml(evt.startTime)} Uhr`;
+
+        return `
+          <article
+            data-open-event="${escapeHtml(evt.id)}"
+            class="group cursor-pointer theme-surface border theme-border border-l-4 ${style.accent} rounded-2xl p-4 hover:shadow-md transition-all ${isPast ? 'opacity-70' : ''}"
+          >
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${style.badge}">
+                    ${escapeHtml(evt.category)}
+                  </span>
+                  ${teamBadge}
+                  ${homeAwayBadge}
+                  ${overlapBadge}
+                </div>
+                <h3 class="text-sm sm:text-base font-extrabold theme-text group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  ${escapeHtml(evt.title)}
+                </h3>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs theme-text-secondary">
+                  <span class="font-semibold theme-text">🕒 ${timeLabel}</span>
+                  <span>📍 ${escapeHtml(evt.location)}</span>
+                  ${evt.opponent ? `<span>🎯 Gegner: ${escapeHtml(evt.opponent)}</span>` : ''}
+                </div>
+              </div>
+              ${captainControls}
+            </div>
+          </article>
+        `;
+      }
+
+      /* ----------------------------------------------------------------------
+         RENDERING: LISTENANSICHT (inkl. HEUTE / MORGEN / DIESE WOCHE Badges)
+         ---------------------------------------------------------------------- */
+      function renderListView() {
+        if (state.loading) {
+          els.activeCountBadge.textContent = 'Lade Termine …';
+          els.listViewContainer.innerHTML = `
+            <div class="theme-surface border theme-border rounded-2xl p-10 text-center">
+              <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p class="text-sm font-semibold theme-text-secondary">Termine werden aus der Datenbank geladen …</p>
+            </div>
+          `;
+          return;
+        }
+
+        const events = getFilteredEvents(true);
+        els.activeCountBadge.textContent = events.length === 1 ? '1 Termin angezeigt' : `${events.length} Termine angezeigt`;
+
+        if (events.length === 0) {
+          els.listViewContainer.innerHTML = `
+            <div class="theme-surface border theme-border rounded-2xl p-10 text-center space-y-2">
+              <p class="text-base font-bold theme-text">Keine Termine gefunden</p>
+              <p class="text-xs sm:text-sm theme-text-secondary">
+                Passe die Filter an oder aktiviere „Vergangene Termine anzeigen“.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        const groups = new Map();
+        events.forEach((evt) => {
+          if (!groups.has(evt.date)) groups.set(evt.date, []);
+          groups.get(evt.date).push(evt);
+        });
+
+        let html = '';
+        groups.forEach((dayEvents, dateISO) => {
+          const relBadge = getRelativeDateBadge(dateISO);
+          const isToday = dateISO === todayISO;
+          const isTomorrow = dateISO === tomorrowISO;
+          const headingColor = isToday
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : isTomorrow
+              ? 'text-sky-600 dark:text-sky-400'
+              : 'theme-text-secondary';
+
+          const badgeHtml = relBadge
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>`
+            : '';
+
+          html += `
+            <div class="space-y-2.5">
+              <div class="flex flex-wrap items-center gap-2 pt-1">
+                <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-wide ${headingColor}">
+                  ${escapeHtml(formatDateLong(dateISO))}
+                </h2>
+                ${badgeHtml}
+              </div>
+              <div class="space-y-2.5">
+                ${dayEvents.map(buildEventCardHtml).join('')}
+              </div>
+            </div>
+          `;
+        });
+
+        els.listViewContainer.innerHTML = html;
+      }
+
+      /* ----------------------------------------------------------------------
+         RENDERING: WOCHENANSICHT (inkl. HEUTE / MORGEN / DIESE WOCHE Badges)
+         ---------------------------------------------------------------------- */
+      function renderWeekView() {
+        const weekStart = state.weekStartDate;
+        const weekEnd = addDaysISO(weekStart, 6);
+        const kw = getISOWeekNumber(weekStart);
+
+        els.calendarWeekTitle.textContent = `KW ${kw} • ${formatDayMonth(weekStart)} – ${formatDateShort(weekEnd)}`;
+
+        const allFiltered = getFilteredEvents(false);
+        const eventsByDate = new Map();
+        allFiltered.forEach((evt) => {
+          if (!eventsByDate.has(evt.date)) eventsByDate.set(evt.date, []);
+          eventsByDate.get(evt.date).push(evt);
+        });
+
+        let weekCount = 0;
+        let html = '';
+
+        for (let offset = 0; offset < 7; offset++) {
+          const dateISO = addDaysISO(weekStart, offset);
+          const d = parseISODate(dateISO);
+          const dayEvents = eventsByDate.get(dateISO) || [];
+          weekCount += dayEvents.length;
+          const isToday = dateISO === todayISO;
+          const isTomorrow = dateISO === tomorrowISO;
+          const relBadge = getRelativeDateBadge(dateISO);
+          const hasOverlap = dayEvents.some((evt) => findDartraumOverlaps(evt, evt.id).length > 0);
+
+          const addBtnHtml = state.captainMode
+            ? `<button type="button" data-week-add-date="${dateISO}" title="Neuer Termin am ${formatDateShort(dateISO)}" class="w-6 h-6 rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-extrabold text-sm leading-none flex items-center justify-center transition-colors shrink-0">+</button>`
+            : '';
+
+          const relPillHtml = relBadge && (isToday || isTomorrow || dayEvents.length > 0)
+            ? `<div class="px-3 pt-1.5">
+                 <span class="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>
+               </div>`
+            : '';
+
+          const cardsHtml =
+            dayEvents.length === 0
+              ? `<p class="text-[11px] theme-text-muted italic py-2">Keine Termine</p>`
+              : dayEvents
+                  .map((evt) => {
+                    const st = getCategoryStyle(evt.category);
+                    const overlap = findDartraumOverlaps(evt, evt.id).length > 0;
+                    const timeText = evt.endTime ? `${evt.startTime}–${evt.endTime}` : evt.startTime;
+                    return `
+                      <button
+                        type="button"
+                        data-open-event="${escapeHtml(evt.id)}"
+                        class="w-full text-left rounded-xl border theme-border border-l-4 ${st.accent} theme-surface-2 hover:shadow-sm p-2.5 space-y-1 transition-all"
+                      >
+                        <div class="flex items-center justify-between gap-1 text-[11px] font-bold theme-text-secondary">
+                          <span>${escapeHtml(timeText)}</span>
+                          ${overlap ? '<span title="Überschneidung im Dartraum" class="text-amber-500">⚠</span>' : ''}
+                        </div>
+                        <div class="text-xs font-extrabold theme-text leading-snug">
+                          ${escapeHtml(evt.title)}
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1 pt-0.5">
+                          ${evt.team ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>` : ''}
+                          ${evt.homeAway ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
+                        </div>
+                        <div class="text-[10px] theme-text-muted truncate">📍 ${escapeHtml(evt.location)}</div>
+                      </button>
+                    `;
+                  })
+                  .join('');
+
+          html += `
+            <div class="flex flex-col min-h-[120px] lg:min-h-[320px] ${isToday ? 'bg-emerald-50/40 dark:bg-emerald-950/20' : isTomorrow ? 'bg-sky-50/30 dark:bg-sky-950/10' : ''}">
+              <div class="px-3 py-2.5 border-b theme-border theme-surface-2 flex items-center justify-between gap-1">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="text-xs font-extrabold uppercase ${isToday ? 'text-emerald-600 dark:text-emerald-400' : isTomorrow ? 'text-sky-600 dark:text-sky-400' : 'theme-text-secondary'}">
+                    ${WEEKDAY_SHORT[d.getDay()]}
+                  </span>
+                  <span class="px-1.5 py-0.5 rounded-md text-xs font-extrabold ${
+                    isToday
+                      ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950'
+                      : isTomorrow
+                        ? 'bg-sky-600 text-white dark:bg-sky-500 dark:text-zinc-950'
+                        : 'theme-text'
+                  }">
+                    ${formatDayMonth(dateISO)}
+                  </span>
+                  ${hasOverlap ? '<span title="Überschneidung im Dartraum" class="text-xs text-amber-500 font-bold">⚠</span>' : ''}
+                </div>
+                ${addBtnHtml}
+              </div>
+              ${relPillHtml}
+              <div class="p-2 space-y-2 flex-1">
+                ${cardsHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        els.weekGrid.innerHTML = html;
+        els.activeCountBadge.textContent = weekCount === 1 ? '1 Termin in dieser Woche' : `${weekCount} Termine in dieser Woche`;
+      }
+
+      /* ----------------------------------------------------------------------
+         RENDERING: MONATSANSICHT
+         ---------------------------------------------------------------------- */
+      function renderMonthView() {
+        const allFiltered = getFilteredEvents(false);
+        els.activeCountBadge.textContent = allFiltered.length === 1 ? '1 Termin im Filter' : `${allFiltered.length} Termine im Filter`;
+
+        els.calendarMonthTitle.textContent = `${MONTH_NAMES[state.currentMonth]} ${state.currentYear}`;
+
+        const firstDayOfMonth = new Date(state.currentYear, state.currentMonth, 1);
+        const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
+        const startOffset = (firstDayOfMonth.getDay() + 6) % 7;
+
+        const eventsByDate = new Map();
+        allFiltered.forEach((evt) => {
+          if (!eventsByDate.has(evt.date)) eventsByDate.set(evt.date, []);
+          eventsByDate.get(evt.date).push(evt);
+        });
+
+        let gridHtml = '';
+        const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+        for (let i = 0; i < totalCells; i++) {
+          const dayNum = i - startOffset + 1;
+          if (dayNum < 1 || dayNum > daysInMonth) {
+            gridHtml += `<div class="min-h-[76px] sm:min-h-[96px] p-1.5 border-b border-r theme-border theme-surface-2 opacity-40"></div>`;
+            continue;
+          }
+
+          const dateISO = `${state.currentYear}-${pad2(state.currentMonth + 1)}-${pad2(dayNum)}`;
+          const dayEvents = eventsByDate.get(dateISO) || [];
+          const isToday = dateISO === todayISO;
+          const isSelected = dateISO === state.selectedDate;
+          const hasOverlap = dayEvents.some((evt) => findDartraumOverlaps(evt, evt.id).length > 0);
+
+          const pillsHtml = dayEvents
+            .slice(0, 3)
+            .map((evt) => {
+              const st = getCategoryStyle(evt.category);
+              return `
+                <div class="flex items-center gap-1 truncate text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${st.badge}">
+                  <span class="w-1.5 h-1.5 rounded-full ${st.dot} shrink-0"></span>
+                  <span class="truncate">${escapeHtml(evt.team || evt.title)}</span>
+                </div>
+              `;
+            })
+            .join('');
+
+          const moreHtml = dayEvents.length > 3
+            ? `<div class="text-[10px] font-bold theme-text-muted px-1">+${dayEvents.length - 3} weitere</div>`
+            : '';
+
+          gridHtml += `
+            <button
+              type="button"
+              data-select-date="${dateISO}"
+              class="text-left align-top min-h-[76px] sm:min-h-[96px] p-1.5 border-b border-r theme-border transition-colors flex flex-col gap-1 ${
+                isSelected
+                  ? 'bg-emerald-50/90 dark:bg-emerald-950/40 ring-2 ring-inset ring-emerald-500'
+                  : 'hover:bg-slate-100/70 dark:hover:bg-zinc-800/50'
+              }"
+            >
+              <div class="flex items-center justify-between w-full">
+                <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-extrabold ${
+                  isToday
+                    ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950'
+                    : 'theme-text'
+                }">
+                  ${dayNum}
+                </span>
+                ${hasOverlap ? '<span title="Überschneidung im Dartraum" class="text-[11px] text-amber-500 font-bold">⚠</span>' : ''}
+              </div>
+              <div class="space-y-1 w-full overflow-hidden">
+                ${pillsHtml}
+                ${moreHtml}
+              </div>
+            </button>
+          `;
+        }
+
+        els.calendarGrid.innerHTML = gridHtml;
+
+        els.selectedDayTitle.textContent = formatDateLong(state.selectedDate);
+        const selRelBadge = getRelativeDateBadge(state.selectedDate);
+        if (selRelBadge) {
+          els.selectedDayRelativeBadge.textContent = selRelBadge.label;
+          els.selectedDayRelativeBadge.className = `px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${selRelBadge.cls}`;
+        } else {
+          els.selectedDayRelativeBadge.className = 'hidden';
+        }
+
+        const selectedEvents = eventsByDate.get(state.selectedDate) || [];
+        if (selectedEvents.length === 0) {
+          els.selectedDayList.innerHTML = `<p class="text-xs sm:text-sm theme-text-muted">An diesem Tag sind keine Termine eingetragen.</p>`;
+        } else {
+          els.selectedDayList.innerHTML = selectedEvents.map(buildEventCardHtml).join('');
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         RENDERING: MITGLIEDER-ANSICHT (0, 1 ODER MEHRERE MANNSCHAFTEN)
+         ---------------------------------------------------------------------- */
+      function renderMembersView() {
+        els.memberTeamFilterBar.innerHTML = buildTeamFilterHtml(
+          state.memberTeamFilter,
+          'data-member-team-filter',
+          { allLabel: 'Alle', includeNone: true }
+        );
+
+        if (state.membersError) {
+          els.membersErrorBox.innerHTML =
+            `<strong>Hinweis zur Mitglieder-Tabelle:</strong> ${escapeHtml(state.membersError)}`;
+          els.membersErrorBox.classList.remove('hidden');
+        } else {
+          els.membersErrorBox.classList.add('hidden');
+        }
+
+        if (state.membersLoading) {
+          els.membersCountBadge.textContent = 'Lade …';
+          els.membersListContainer.innerHTML = `
+            <div class="sm:col-span-2 lg:col-span-3 py-10 text-center">
+              <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p class="text-sm font-semibold theme-text-secondary">Mitglieder werden geladen …</p>
+            </div>
+          `;
+          return;
+        }
+
+        const query = state.memberSearch.trim().toLowerCase();
+        const filtered = state.members
+          .filter((m) => {
+            const memberTeams = Array.isArray(m.teams) ? m.teams : parseTeams(m.mannschaft);
+
+            if (state.memberTeamFilter === 'none') {
+              if (memberTeams.length > 0) return false;
+            } else if (state.memberTeamFilter !== 'all') {
+              if (!memberTeams.includes(state.memberTeamFilter)) return false;
+            }
+
+            if (!query) return true;
+            const inName = m.name.toLowerCase().includes(query);
+            const inOrt = (m.ort || '').toLowerCase().includes(query);
+            const inTeams = memberTeams.some((t) => t.toLowerCase().includes(query));
+            return inName || inOrt || inTeams;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name, 'de'));
+
+        els.membersCountBadge.textContent =
+          filtered.length === 1 ? '1 Mitglied' : `${filtered.length} Mitglieder`;
+
+        if (filtered.length === 0) {
+          els.membersListContainer.innerHTML = `
+            <div class="sm:col-span-2 lg:col-span-3 py-10 text-center space-y-1.5">
+              <p class="text-sm font-bold theme-text">Keine Mitglieder gefunden</p>
+              <p class="text-xs theme-text-secondary">
+                ${state.members.length === 0 ? 'Es wurden noch keine Mitglieder eingetragen.' : 'Passe deine Suche oder den Mannschafts-Filter an.'}
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        els.membersListContainer.innerHTML = filtered
+          .map((m) => {
+            const memberTeams = Array.isArray(m.teams) ? m.teams : parseTeams(m.mannschaft);
+            const bInfo = getNextBirthdayInfo(m.geburtsdatum);
+            const birthdayBadge = bInfo
+              ? bInfo.daysUntil === 0
+                ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950 shrink-0">🎂 Heute!</span>'
+                : bInfo.daysUntil <= 14
+                  ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 shrink-0">🎂 in ${bInfo.daysUntil} ${bInfo.daysUntil === 1 ? 'Tag' : 'Tagen'}</span>`
+                  : ''
+              : '';
+
+            const teamBadgesHtml =
+              memberTeams.length > 0
+                ? memberTeams
+                    .map(
+                      (team) =>
+                        `<span class="inline-flex items-center px-2 py-0.5 rounded-md border text-[11px] font-bold ${getTeamBadgeStyle(team)}">🎯 ${escapeHtml(team)}</span>`
+                    )
+                    .join('')
+                : `<span class="inline-flex items-center px-2 py-0.5 rounded-md border border-slate-200 bg-slate-100 text-slate-600 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400 text-[11px] font-semibold">Keine Mannschaft</span>`;
+
+            const captainActions = state.captainMode
+              ? `
+                <div class="flex items-center gap-1.5 pt-2.5 mt-2.5 border-t theme-border">
+                  <button type="button" data-edit-member="${escapeHtml(m.id)}" class="flex-1 px-2.5 py-1.5 rounded-lg border theme-btn-neutral text-xs font-semibold">
+                    Bearbeiten
+                  </button>
+                  <button type="button" data-delete-member="${escapeHtml(m.id)}" class="px-2.5 py-1.5 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/70 text-xs font-semibold">
+                    Löschen
+                  </button>
+                </div>
+              `
+              : '';
+
+            return `
+              <article class="theme-surface-2 border theme-border rounded-2xl p-4 flex flex-col justify-between">
+                <div class="space-y-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="text-sm sm:text-base font-extrabold theme-text leading-snug">${escapeHtml(m.name)}</h3>
+                    ${birthdayBadge}
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    ${teamBadgesHtml}
+                  </div>
+                  <div class="space-y-1 text-xs theme-text-secondary">
+                    <div>📍 ${m.ort ? escapeHtml(m.ort) : '<span class="theme-text-muted">Kein Ort angegeben</span>'}</div>
+                    <div>🎂 ${m.geburtsdatum ? escapeHtml(formatDateShort(m.geburtsdatum)) : '<span class="theme-text-muted">Kein Geburtsdatum</span>'}${bInfo && bInfo.currentAge >= 0 ? ` <span class="theme-text-muted">(${bInfo.currentAge} Jahre)</span>` : ''}</div>
+                  </div>
+                </div>
+                ${captainActions}
+              </article>
+            `;
+          })
+          .join('');
+      }
+
+      /* ----------------------------------------------------------------------
+         MITGLIEDER-FORMULAR: CHECKBOX-KACHELN RENDERN & AUSLESEN
+         ---------------------------------------------------------------------- */
+      function renderMemberTeamsCheckboxes(selectedTeams) {
+        const selectedSet = new Set(parseTeams(selectedTeams));
+
+        els.memberTeamsCheckboxGroup.innerHTML = TEAM_GROUPS.map((group) => {
+          const isSteel = group.label.includes('Steel');
+          const accentText = isSteel
+            ? 'text-emerald-700 dark:text-emerald-400'
+            : 'text-blue-700 dark:text-blue-400';
+
+          const tilesHtml = group.teams
+            .map((team) => {
+              const checked = selectedSet.has(team);
+              const tileBorder = checked
+                ? isSteel
+                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/50 dark:border-emerald-400'
+                  : 'border-blue-500 bg-blue-50 dark:bg-blue-950/50 dark:border-blue-400'
+                : 'theme-border-strong theme-surface hover:border-emerald-500/50';
+
+              return `
+                <label class="flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer select-none transition-all ${tileBorder}">
+                  <input
+                    type="checkbox"
+                    name="memberTeamOption"
+                    value="${escapeHtml(team)}"
+                    ${checked ? 'checked' : ''}
+                    class="w-4 h-4 rounded border-zinc-500 text-emerald-600 focus:ring-emerald-500 shrink-0"
+                  />
+                  <span class="text-xs sm:text-sm font-bold theme-text truncate">${escapeHtml(team)}</span>
+                </label>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="space-y-1.5">
+              <div class="text-[11px] font-extrabold uppercase tracking-wider ${accentText}">
+                ${escapeHtml(group.label)}
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                ${tilesHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function getSelectedMemberTeamsFromForm() {
+        return Array.from(
+          els.memberTeamsCheckboxGroup.querySelectorAll('input[name="memberTeamOption"]:checked')
+        ).map((input) => input.value);
+      }
+
+      function renderAll() {
+        renderNoticeBanner();
+        renderCaptainUI();
+        renderViewButtons();
+        renderNextBirthdayBanner();
+        renderFilterPills();
+        els.realtimeStatusBadge.classList.toggle('hidden', !state.realtimeConnected);
+
+        if (state.view === 'list') {
+          renderListView();
+        } else if (state.view === 'week') {
+          renderWeekView();
+        } else if (state.view === 'month') {
+          renderMonthView();
+        } else {
+          renderMembersView();
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         DATEN AUS SUPABASE LADEN
+         ---------------------------------------------------------------------- */
+      async function fetchAndRenderEvents() {
+        if (!supabaseClient) {
+          state.loading = false;
+          state.events = [];
+          renderAll();
+          return;
+        }
+
+        state.loading = true;
+        state.loadError = null;
+        renderAll();
+
+        try {
+          state.events = await loadEventsFromSupabase();
+        } catch (err) {
+          console.error('Supabase Ladefehler:', err);
+          state.loadError = err?.message || 'Verbindung zur Datenbank fehlgeschlagen.';
+        } finally {
+          state.loading = false;
+          renderAll();
+        }
+      }
+
+      async function fetchAndRenderMembers() {
+        if (!supabaseClient) {
+          state.membersLoading = false;
+          state.members = [];
+          renderAll();
+          return;
+        }
+
+        state.membersLoading = true;
+        state.membersError = null;
+        renderAll();
+
+        try {
+          state.members = await loadMembersFromSupabase();
+        } catch (err) {
+          console.error('Supabase Mitglieder-Ladefehler:', err);
+          state.membersError = err?.message || 'Mitglieder konnten nicht geladen werden.';
+        } finally {
+          state.membersLoading = false;
+          renderAll();
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         SUPABASE REALTIME (ECHTZEIT-AKTUALISIERUNG)
+         ---------------------------------------------------------------------- */
+      function setupRealtimeSubscriptions() {
+        if (!supabaseClient) return;
+
+        try {
+          supabaseClient
+            .channel('dvk-kalender-realtime')
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: TABLE_NAME },
+              (payload) => {
+                if (payload.eventType === 'INSERT' && payload.new) {
+                  const incoming = mapRowToEvent(payload.new);
+                  if (!state.events.some((e) => String(e.id) === String(incoming.id))) {
+                    state.events.push(incoming);
+                    showToast('Kalender in Echtzeit aktualisiert');
+                  }
+                } else if (payload.eventType === 'UPDATE' && payload.new) {
+                  const updated = mapRowToEvent(payload.new);
+                  state.events = state.events.map((e) =>
+                    String(e.id) === String(updated.id) ? updated : e
+                  );
+                } else if (payload.eventType === 'DELETE' && payload.old) {
+                  state.events = state.events.filter(
+                    (e) => String(e.id) !== String(payload.old.id)
+                  );
+                }
+                renderAll();
+              }
+            )
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: MEMBERS_TABLE_NAME },
+              (payload) => {
+                if (payload.eventType === 'INSERT' && payload.new) {
+                  const incoming = mapRowToMember(payload.new);
+                  if (!state.members.some((m) => String(m.id) === String(incoming.id))) {
+                    state.members.push(incoming);
+                    showToast('Mitgliederliste in Echtzeit aktualisiert');
+                  }
+                } else if (payload.eventType === 'UPDATE' && payload.new) {
+                  const updated = mapRowToMember(payload.new);
+                  state.members = state.members.map((m) =>
+                    String(m.id) === String(updated.id) ? updated : m
+                  );
+                } else if (payload.eventType === 'DELETE' && payload.old) {
+                  state.members = state.members.filter(
+                    (m) => String(m.id) !== String(payload.old.id)
+                  );
+                }
+                renderAll();
+              }
+            )
+            .subscribe((status) => {
+              state.realtimeConnected = status === 'SUBSCRIBED';
+              els.realtimeStatusBadge.classList.toggle('hidden', !state.realtimeConnected);
+            });
+        } catch (err) {
+          console.error('Realtime-Verbindung fehlgeschlagen:', err);
+          state.realtimeConnected = false;
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         MODAL-STEUERUNG
+         ---------------------------------------------------------------------- */
+      function openModal(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        const stillOpen = [
+          els.detailModal,
+          els.formModal,
+          els.loginModal,
+          els.confirmModal,
+          els.memberFormModal
+        ].some((m) => !m.classList.contains('hidden'));
+        if (!stillOpen) document.body.style.overflow = '';
+      }
+
+      function openConfirmModal(title, message, actionText, callback) {
+        els.confirmModalTitle.textContent = title;
+        els.confirmModalMessage.innerHTML = message;
+        els.confirmModalActionBtn.textContent = actionText;
+        state.confirmCallback = callback;
+        openModal(els.confirmModal);
+      }
+
+      function requestDeleteEvent(evt) {
+        openConfirmModal(
+          'Termin löschen?',
+          `Möchtest du den Termin <strong class="theme-text">„${escapeHtml(evt.title)}“</strong> wirklich unwiderruflich entfernen?`,
+          'Ja, löschen',
+          async () => {
+            try {
+              await deleteEventInSupabase(evt.id);
+              state.events = state.events.filter((item) => String(item.id) !== String(evt.id));
+              renderAll();
+              showToast('Termin wurde gelöscht');
+            } catch (err) {
+              console.error('Fehler beim Löschen:', err);
+              showToast('Fehler beim Löschen: ' + (err?.message || 'Keine Berechtigung'));
+            }
+          }
+        );
+      }
+
+      function requestDeleteMember(member) {
+        openConfirmModal(
+          'Mitglied löschen?',
+          `Möchtest du <strong class="theme-text">${escapeHtml(member.name)}</strong> wirklich aus der Mitgliederliste entfernen?`,
+          'Ja, löschen',
+          async () => {
+            try {
+              await deleteMemberInSupabase(member.id);
+              state.members = state.members.filter((m) => String(m.id) !== String(member.id));
+              renderAll();
+              showToast('Mitglied wurde gelöscht');
+            } catch (err) {
+              console.error('Fehler beim Löschen des Mitglieds:', err);
+              showToast('Fehler beim Löschen: ' + (err?.message || 'Keine Berechtigung'));
+            }
+          }
+        );
+      }
+
+      function openDetailModal(evt) {
+        const style = getCategoryStyle(evt.category);
+        const overlaps = findDartraumOverlaps(evt, evt.id);
+        const relBadge = getRelativeDateBadge(evt.date);
+
+        const overlapHtml = overlaps.length > 0
+          ? `
+            <div class="rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/70 dark:text-amber-100 p-3 text-xs space-y-1">
+              <div class="font-bold">⚠ Zeitliche Überschneidung im Dartraum</div>
+              <div>Gleichzeitig eingetragen: ${overlaps.map((o) => `<strong>${escapeHtml(o.title)}</strong> (${escapeHtml(o.startTime)}–${escapeHtml(o.endTime)})`).join(', ')}</div>
+            </div>
+          `
+          : '';
+
+        const timeLabel = evt.endTime
+          ? `${escapeHtml(evt.startTime)} – ${escapeHtml(evt.endTime)} Uhr`
+          : `${escapeHtml(evt.startTime)} Uhr`;
+
+        els.detailModalBody.innerHTML = `
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="px-2.5 py-0.5 rounded-full border text-xs font-bold ${style.badge}">${escapeHtml(evt.category)}</span>
+            ${evt.team ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>` : ''}
+            ${evt.homeAway ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
+            ${relBadge ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>` : ''}
+          </div>
+          <h3 class="text-lg font-extrabold theme-text">${escapeHtml(evt.title)}</h3>
+          ${overlapHtml}
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-1">
+            <div class="rounded-xl theme-surface-2 border theme-border p-3">
+              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Datum</dt>
+              <dd class="font-bold theme-text mt-0.5">${escapeHtml(formatDateLong(evt.date))}</dd>
+            </div>
+            <div class="rounded-xl theme-surface-2 border theme-border p-3">
+              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Uhrzeit</dt>
+              <dd class="font-bold theme-text mt-0.5">${timeLabel}</dd>
+            </div>
+            <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
+              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Ort</dt>
+              <dd class="font-bold theme-text mt-0.5">${escapeHtml(evt.location)}</dd>
+            </div>
+            ${evt.opponent ? `
+              <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
+                <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Gegner</dt>
+                <dd class="font-bold theme-text mt-0.5">${escapeHtml(evt.opponent)}</dd>
+              </div>
+            ` : ''}
+            ${evt.notes ? `
+              <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
+                <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Notizen</dt>
+                <dd class="theme-text-secondary mt-0.5 whitespace-pre-line">${escapeHtml(evt.notes)}</dd>
+              </div>
+            ` : ''}
+          </dl>
+        `;
+
+        els.detailModalFooter.innerHTML = `
+          <button type="button" id="downloadIcsBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border theme-btn-neutral text-xs sm:text-sm font-bold">
+            📅 In Kalender speichern (.ics)
+          </button>
+          <div class="flex items-center gap-2">
+            ${state.captainMode ? `
+              <button type="button" id="detailEditBtn" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 text-xs sm:text-sm font-bold">
+                Bearbeiten
+              </button>
+              <button type="button" id="detailDeleteBtn" class="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold">
+                Löschen
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        const icsBtn = document.getElementById('downloadIcsBtn');
+        if (icsBtn) icsBtn.addEventListener('click', () => downloadEventICS(evt));
+
+        if (state.captainMode) {
+          const editBtn = document.getElementById('detailEditBtn');
+          const delBtn = document.getElementById('detailDeleteBtn');
+          if (editBtn) {
+            editBtn.addEventListener('click', () => {
+              closeModal(els.detailModal);
+              openFormModal(evt);
+            });
+          }
+          if (delBtn) {
+            delBtn.addEventListener('click', () => {
+              closeModal(els.detailModal);
+              requestDeleteEvent(evt);
+            });
+          }
+        }
+
+        openModal(els.detailModal);
+      }
+
+      /* ----------------------------------------------------------------------
+         FORMULAR-LOGIK (TERMINE & MITGLIEDER)
+         ---------------------------------------------------------------------- */
+      function syncDartraumCheckbox() {
+        const checked = els.inDartraumCheckbox.checked;
+        if (checked) {
+          els.locationInput.value = DARTRAUM_NAME;
+          els.locationInput.disabled = true;
+        } else {
+          els.locationInput.disabled = false;
+          if (els.locationInput.value === DARTRAUM_NAME) {
+            els.locationInput.value = '';
+          }
+        }
+        updateOverlapWarning();
+      }
+
+      function updateOverlapWarning() {
+        const candidate = {
+          inDartraum: els.inDartraumCheckbox.checked,
+          date: els.dateInput.value,
+          startTime: els.startTimeInput.value,
+          endTime: els.endTimeInput.value
+        };
+        const overlaps = findDartraumOverlaps(candidate, els.eventIdInput.value || null);
+        if (overlaps.length > 0) {
+          const list = overlaps
+            .map((o) => `• ${escapeHtml(o.title)} (${escapeHtml(o.startTime)}–${escapeHtml(o.endTime)} Uhr)`)
+            .join('<br />');
+          els.overlapWarningBox.innerHTML = `<strong>⚠ Hinweis – Überschneidung im Dartraum (${escapeHtml(formatDateShort(candidate.date))}):</strong><br />${list}`;
+          els.overlapWarningBox.classList.remove('hidden');
+        } else {
+          els.overlapWarningBox.classList.add('hidden');
+        }
+      }
+
+      function openFormModal(evt, defaultDate) {
+        els.formErrorBox.classList.add('hidden');
+        els.overlapWarningBox.classList.add('hidden');
+
+        if (evt) {
+          els.formModalTitle.textContent = 'Termin bearbeiten';
+          els.eventIdInput.value = evt.id;
+          els.titleInput.value = evt.title;
+          els.categoryInput.value = evt.category;
+          els.teamInput.value = evt.team || '';
+          els.homeAwayInput.value = evt.homeAway || '';
+          els.opponentInput.value = evt.opponent || '';
+          els.dateInput.value = evt.date;
+          els.startTimeInput.value = evt.startTime;
+          els.endTimeInput.value = evt.endTime;
+          els.inDartraumCheckbox.checked = Boolean(evt.inDartraum);
+          els.locationInput.value = evt.location || DARTRAUM_NAME;
+          els.notesInput.value = evt.notes || '';
+        } else {
+          els.formModalTitle.textContent = 'Neuer Termin';
+          els.eventIdInput.value = '';
+          els.titleInput.value = '';
+          els.categoryInput.value = 'NDSO Ligamatch';
+          els.teamInput.value = '';
+          els.homeAwayInput.value = '';
+          els.opponentInput.value = '';
+          els.dateInput.value = defaultDate || todayISO;
+          els.startTimeInput.value = '19:00';
+          els.endTimeInput.value = '22:00';
+          els.inDartraumCheckbox.checked = true;
+          els.locationInput.value = DARTRAUM_NAME;
+          els.notesInput.value = '';
+        }
+
+        syncDartraumCheckbox();
+        openModal(els.formModal);
+        setTimeout(() => els.titleInput.focus(), 50);
+      }
+
+      function openMemberFormModal(member) {
+        els.memberFormErrorBox.classList.add('hidden');
+        if (member) {
+          els.memberFormModalTitle.textContent = 'Mitglied bearbeiten';
+          els.memberIdInput.value = member.id;
+          els.memberNameInput.value = member.name || '';
+          renderMemberTeamsCheckboxes(member.teams || parseTeams(member.mannschaft));
+          els.memberLocationInput.value = member.ort || '';
+          els.memberBirthdateInput.value = member.geburtsdatum || '';
+        } else {
+          els.memberFormModalTitle.textContent = 'Neues Mitglied';
+          els.memberIdInput.value = '';
+          els.memberNameInput.value = '';
+          renderMemberTeamsCheckboxes([]);
+          els.memberLocationInput.value = '';
+          els.memberBirthdateInput.value = '';
+        }
+        openModal(els.memberFormModal);
+        setTimeout(() => els.memberNameInput.focus(), 50);
+      }
+
+      /* ----------------------------------------------------------------------
+         EVENT-LISTENER
+         ---------------------------------------------------------------------- */
+      els.themeToggleBtn.addEventListener('click', () => {
+        applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+      });
+
+      els.viewListBtn.addEventListener('click', () => {
+        state.view = 'list';
+        renderAll();
+      });
+
+      els.viewWeekBtn.addEventListener('click', () => {
+        state.view = 'week';
+        renderAll();
+      });
+
+      els.viewMonthBtn.addEventListener('click', () => {
+        state.view = 'month';
+        renderAll();
+      });
+
+      els.viewMembersBtn.addEventListener('click', () => {
+        state.view = 'members';
+        renderAll();
+      });
+
+      els.nextBirthdayBanner.addEventListener('click', () => {
+        state.view = 'members';
+        renderAll();
+      });
+
+      els.categoryFilterBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cat-filter]');
+        if (!btn) return;
+        state.categoryFilter = btn.dataset.catFilter;
+        renderAll();
+      });
+
+      els.teamFilterBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-team-filter]');
+        if (!btn) return;
+        state.teamFilter = btn.dataset.teamFilter;
+        renderAll();
+      });
+
+      els.memberTeamFilterBar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-member-team-filter]');
+        if (!btn) return;
+        state.memberTeamFilter = btn.dataset.memberTeamFilter;
+        renderMembersView();
+      });
+
+      // Kachel-Styling live aktualisieren, wenn im Mitglieder-Formular eine Mannschaft angeklickt wird
+      els.memberTeamsCheckboxGroup.addEventListener('change', () => {
+        renderMemberTeamsCheckboxes(getSelectedMemberTeamsFromForm());
+      });
+
+      els.clearMemberTeamsBtn.addEventListener('click', () => {
+        renderMemberTeamsCheckboxes([]);
+      });
+
+      els.onlyDartraumToggle.addEventListener('change', () => {
+        state.onlyDartraum = els.onlyDartraumToggle.checked;
+        renderAll();
+      });
+
+      els.showPastToggle.addEventListener('change', () => {
+        state.showPast = els.showPastToggle.checked;
+        renderAll();
+      });
+
+      els.prevWeekBtn.addEventListener('click', () => {
+        state.weekStartDate = addDaysISO(state.weekStartDate, -7);
+        renderWeekView();
+      });
+
+      els.nextWeekBtn.addEventListener('click', () => {
+        state.weekStartDate = addDaysISO(state.weekStartDate, 7);
+        renderWeekView();
+      });
+
+      els.todayWeekBtn.addEventListener('click', () => {
+        state.weekStartDate = currentWeekStartISO;
+        renderWeekView();
+      });
+
+      els.weekGrid.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('[data-week-add-date]');
+        if (addBtn) {
+          openFormModal(null, addBtn.dataset.weekAddDate);
+          return;
+        }
+        const card = e.target.closest('[data-open-event]');
+        if (card) {
+          const evt = state.events.find((item) => String(item.id) === card.dataset.openEvent);
+          if (evt) openDetailModal(evt);
+        }
+      });
+
+      els.prevMonthBtn.addEventListener('click', () => {
+        state.currentMonth -= 1;
+        if (state.currentMonth < 0) {
+          state.currentMonth = 11;
+          state.currentYear -= 1;
+        }
+        renderMonthView();
+      });
+
+      els.nextMonthBtn.addEventListener('click', () => {
+        state.currentMonth += 1;
+        if (state.currentMonth > 11) {
+          state.currentMonth = 0;
+          state.currentYear += 1;
+        }
+        renderMonthView();
+      });
+
+      els.todayMonthBtn.addEventListener('click', () => {
+        state.currentYear = Number(todayISO.slice(0, 4));
+        state.currentMonth = Number(todayISO.slice(5, 7)) - 1;
+        state.selectedDate = todayISO;
+        renderMonthView();
+      });
+
+      els.calendarGrid.addEventListener('click', (e) => {
+        const cell = e.target.closest('[data-select-date]');
+        if (!cell) return;
+        state.selectedDate = cell.dataset.selectDate;
+        renderMonthView();
+      });
+
+      function handleEventContainerClick(e) {
+        const editBtn = e.target.closest('[data-edit-event]');
+        if (editBtn) {
+          e.stopPropagation();
+          const evt = state.events.find((item) => String(item.id) === editBtn.dataset.editEvent);
+          if (evt) openFormModal(evt);
+          return;
+        }
+
+        const deleteBtn = e.target.closest('[data-delete-event]');
+        if (deleteBtn) {
+          e.stopPropagation();
+          const evt = state.events.find((item) => String(item.id) === deleteBtn.dataset.deleteEvent);
+          if (evt) requestDeleteEvent(evt);
+          return;
+        }
+
+        const card = e.target.closest('[data-open-event]');
+        if (card) {
+          const evt = state.events.find((item) => String(item.id) === card.dataset.openEvent);
+          if (evt) openDetailModal(evt);
+        }
+      }
+
+      els.listViewContainer.addEventListener('click', handleEventContainerClick);
+      els.selectedDayList.addEventListener('click', handleEventContainerClick);
+
+      els.newMemberBtn.addEventListener('click', () => openMemberFormModal(null));
+      els.bannerNewMemberBtn.addEventListener('click', () => openMemberFormModal(null));
+
+      els.memberSearchInput.addEventListener('input', () => {
+        state.memberSearch = els.memberSearchInput.value;
+        renderMembersView();
+      });
+
+      els.membersListContainer.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-edit-member]');
+        if (editBtn) {
+          const member = state.members.find((m) => String(m.id) === editBtn.dataset.editMember);
+          if (member) openMemberFormModal(member);
+          return;
+        }
+        const delBtn = e.target.closest('[data-delete-member]');
+        if (delBtn) {
+          const member = state.members.find((m) => String(m.id) === delBtn.dataset.deleteMember);
+          if (member) requestDeleteMember(member);
+        }
+      });
+
+      els.memberForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabaseClient || !state.captainMode) {
+          showToast('Bitte zuerst als Kapitän anmelden.');
+          return;
+        }
+
+        const name = els.memberNameInput.value.trim();
+        const teams = getSelectedMemberTeamsFromForm();
+        const ort = els.memberLocationInput.value.trim();
+        const geburtsdatum = els.memberBirthdateInput.value;
+
+        if (!name) {
+          els.memberFormErrorBox.textContent = 'Bitte gib einen Namen ein.';
+          els.memberFormErrorBox.classList.remove('hidden');
+          return;
+        }
+
+        els.memberFormErrorBox.classList.add('hidden');
+        els.memberSubmitBtn.disabled = true;
+        els.memberSubmitBtn.textContent = 'Speichert …';
+
+        const existingId = els.memberIdInput.value;
+        const memberData = { name, teams, ort, geburtsdatum };
+
+        try {
+          if (existingId) {
+            const updated = await updateMemberInSupabase(existingId, memberData);
+            state.members = state.members.map((m) => (String(m.id) === String(existingId) ? updated : m));
+            showToast('Mitglied aktualisiert');
+          } else {
+            const created = await createMemberInSupabase(memberData);
+            if (!state.members.some((m) => String(m.id) === String(created.id))) {
+              state.members.push(created);
+            }
+            showToast('Neues Mitglied gespeichert');
+          }
+          closeModal(els.memberFormModal);
+          renderAll();
+        } catch (err) {
+          console.error('Mitglied-Speicherfehler:', err);
+          const rawMsg = String(err?.message || '');
+          if (rawMsg.toLowerCase().includes('mannschaft')) {
+            els.memberFormErrorBox.innerHTML =
+              '<strong>Spalte „mannschaft“ fehlt in Supabase:</strong> Bitte führe im Supabase SQL Editor folgenden Befehl aus:<br /><code class="block mt-1 font-mono">alter table public.mitglieder add column if not exists mannschaft text;</code>';
+          } else if (rawMsg.toLowerCase().includes('geburtsdatum') && rawMsg.toLowerCase().includes('null')) {
+            els.memberFormErrorBox.innerHTML =
+              '<strong>Geburtsdatum ist in der Datenbank noch als Pflichtfeld markiert:</strong> Bitte gib ein Geburtsdatum ein oder führe in Supabase aus:<br /><code class="block mt-1 font-mono">alter table public.mitglieder alter column geburtsdatum drop not null;</code>';
+          } else {
+            els.memberFormErrorBox.textContent = 'Speichern fehlgeschlagen: ' + (rawMsg || 'Bitte Berechtigung prüfen.');
+          }
+          els.memberFormErrorBox.classList.remove('hidden');
+        } finally {
+          els.memberSubmitBtn.disabled = false;
+          els.memberSubmitBtn.textContent = 'Mitglied speichern';
+        }
+      });
+
+      async function handleCaptainLogout() {
+        if (!supabaseClient) return;
+        try {
+          const { error } = await supabaseClient.auth.signOut();
+          if (error) throw error;
+          state.captainMode = false;
+          state.captainUser = null;
+          renderAll();
+          showToast('Kapitäns-Modus abgemeldet');
+        } catch (err) {
+          console.error('Logout-Fehler:', err);
+          showToast('Abmelden fehlgeschlagen');
+        }
+      }
+
+      els.captainModeBtn.addEventListener('click', () => {
+        if (state.captainMode) {
+          handleCaptainLogout();
+        } else {
+          if (!supabaseClient) {
+            showToast('Supabase-Verbindung nicht verfügbar.');
+            return;
+          }
+          els.loginErrorBox.classList.add('hidden');
+          els.loginPasswordInput.value = '';
+          openModal(els.loginModal);
+          setTimeout(() => els.loginEmailInput.focus(), 60);
+        }
+      });
+
+      els.logoutCaptainBtn.addEventListener('click', handleCaptainLogout);
+
+      els.loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabaseClient) return;
+
+        const email = els.loginEmailInput.value.trim();
+        const password = els.loginPasswordInput.value;
+
+        if (!email || !password) {
+          els.loginErrorBox.textContent = 'Bitte E-Mail-Adresse und Passwort eingeben.';
+          els.loginErrorBox.classList.remove('hidden');
+          return;
+        }
+
+        els.loginErrorBox.classList.add('hidden');
+        els.loginSubmitBtn.disabled = true;
+        els.loginSubmitBtn.textContent = 'Anmelden …';
+
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+
+          state.captainMode = true;
+          state.captainUser = data.user;
+          closeModal(els.loginModal);
+          renderAll();
+          showToast('Erfolgreich als Kapitän angemeldet');
+        } catch (err) {
+          console.error('Login-Fehler:', err);
+          els.loginErrorBox.textContent = 'Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen.';
+          els.loginErrorBox.classList.remove('hidden');
+          els.loginPasswordInput.select();
+        } finally {
+          els.loginSubmitBtn.disabled = false;
+          els.loginSubmitBtn.textContent = 'Anmelden';
+        }
+      });
+
+      els.confirmModalActionBtn.addEventListener('click', () => {
+        const cb = state.confirmCallback;
+        state.confirmCallback = null;
+        closeModal(els.confirmModal);
+        if (typeof cb === 'function') cb();
+      });
+
+      els.newEventBtn.addEventListener('click', () => openFormModal(null));
+      els.addEventOnDayBtn.addEventListener('click', () => openFormModal(null, state.selectedDate));
+
+      els.inDartraumCheckbox.addEventListener('change', syncDartraumCheckbox);
+      els.dateInput.addEventListener('change', updateOverlapWarning);
+      els.startTimeInput.addEventListener('change', updateOverlapWarning);
+      els.endTimeInput.addEventListener('change', updateOverlapWarning);
+
+      els.eventForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!supabaseClient || !state.captainMode) {
+          showToast('Bitte zuerst als Kapitän anmelden.');
+          return;
+        }
+
+        const title = els.titleInput.value.trim();
+        const date = els.dateInput.value;
+        const startTime = els.startTimeInput.value;
+        const endTime = els.endTimeInput.value;
+        const inDartraum = els.inDartraumCheckbox.checked;
+        const location = inDartraum ? DARTRAUM_NAME : els.locationInput.value.trim();
+
+        const errors = [];
+        if (!title) errors.push('Bitte gib einen Titel ein.');
+        if (!date) errors.push('Bitte wähle ein Datum.');
+        if (!startTime || !endTime) {
+          errors.push('Bitte gib Start- und Endzeit an.');
+        } else if (timeToMinutes(endTime) <= timeToMinutes(startTime)) {
+          errors.push('Die Endzeit muss nach der Startzeit liegen.');
+        }
+        if (!inDartraum && !location) {
+          errors.push('Bitte gib einen Ort bzw. eine Adresse ein.');
+        }
+
+        if (errors.length > 0) {
+          els.formErrorBox.innerHTML = errors.map(escapeHtml).join('<br />');
+          els.formErrorBox.classList.remove('hidden');
+          return;
+        }
+
+        els.formErrorBox.classList.add('hidden');
+        els.eventSubmitBtn.disabled = true;
+        els.eventSubmitBtn.textContent = 'Speichert …';
+
+        const existingId = els.eventIdInput.value;
+        const eventData = {
+          title,
+          category: els.categoryInput.value,
+          team: els.teamInput.value,
+          homeAway: els.homeAwayInput.value,
+          date,
+          startTime,
+          endTime,
+          inDartraum,
+          location,
+          opponent: els.opponentInput.value.trim(),
+          notes: els.notesInput.value.trim()
+        };
+
+        try {
+          if (existingId) {
+            const updated = await updateEventInSupabase(existingId, eventData);
+            state.events = state.events.map((item) => (String(item.id) === String(existingId) ? updated : item));
+            showToast('Termin aktualisiert');
+          } else {
+            const created = await createEventInSupabase(eventData);
+            if (!state.events.some((item) => String(item.id) === String(created.id))) {
+              state.events.push(created);
+            }
+            showToast('Neuer Termin gespeichert');
+          }
+
+          state.selectedDate = date;
+          state.weekStartDate = getMondayISO(date);
+          const d = parseISODate(date);
+          state.currentYear = d.getFullYear();
+          state.currentMonth = d.getMonth();
+
+          closeModal(els.formModal);
+          renderAll();
+        } catch (err) {
+          console.error('Supabase Speicherfehler:', err);
+          els.formErrorBox.textContent = 'Speichern fehlgeschlagen: ' + (err?.message || 'Bitte Berechtigung prüfen.');
+          els.formErrorBox.classList.remove('hidden');
+        } finally {
+          els.eventSubmitBtn.disabled = false;
+          els.eventSubmitBtn.textContent = 'Termin speichern';
+        }
+      });
+
+      document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const modal = document.getElementById(btn.dataset.closeModal);
+          if (modal) closeModal(modal);
+        });
+      });
+
+      [els.detailModal, els.formModal, els.loginModal, els.confirmModal, els.memberFormModal].forEach((modal) => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal);
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          [els.confirmModal, els.loginModal, els.formModal, els.memberFormModal, els.detailModal].forEach((modal) => {
+            if (!modal.classList.contains('hidden')) closeModal(modal);
+          });
+        }
+      });
+
+      /* ----------------------------------------------------------------------
+         INITIALISIERUNG
+         ---------------------------------------------------------------------- */
+      async function initApp() {
+        applyTheme(state.theme);
+
+        if (supabaseClient) {
+          try {
+            const { data } = await supabaseClient.auth.getSession();
+            if (data?.session?.user) {
+              state.captainMode = true;
+              state.captainUser = data.session.user;
+            }
+          } catch (err) {
+            console.error('Session-Prüfung fehlgeschlagen:', err);
+          }
+
+          try {
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+              state.captainMode = Boolean(session?.user);
+              state.captainUser = session?.user || null;
+              renderAll();
+            });
+          } catch (err) {
+            console.error('Auth-Listener fehlgeschlagen:', err);
+          }
+
+          setupRealtimeSubscriptions();
+        }
+
+        await Promise.all([fetchAndRenderEvents(), fetchAndRenderMembers()]);
+      }
+
+      initApp();
+    })();
+  </script>
+</body>
+</html>
