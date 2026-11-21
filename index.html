@@ -393,7 +393,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-base sm:text-lg font-extrabold theme-text">Vereinsmitglieder</h2>
-            <p class="text-xs theme-text-secondary">Übersicht aller Mitglieder mit Mannschaften, Wohnort &amp; Geburtsdatum</p>
+            <p class="text-xs theme-text-secondary">Übersicht aller Mitglieder mit Funktion, Mannschaften, Wohnort &amp; Geburtsdatum</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <span id="membersCountBadge" class="text-xs font-bold px-2.5 py-1 rounded-full theme-surface-2 border theme-border theme-text-secondary">
@@ -414,7 +414,7 @@
           <input
             type="search"
             id="memberSearchInput"
-            placeholder="Nach Name, Ort oder Mannschaft suchen …"
+            placeholder="Nach Name, Funktion, Ort oder Mannschaft suchen …"
             class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           />
           <div>
@@ -493,11 +493,6 @@
           <div id="formErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3.5 py-2.5 text-xs font-semibold leading-relaxed"></div>
           <div id="overlapWarningBox" class="hidden rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/70 dark:text-amber-100 px-3.5 py-2.5 text-xs font-semibold"></div>
 
-          <div>
-            <label for="titleInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Titel *</label>
-            <input type="text" id="titleInput" required placeholder="z. B. NDSO Heimmatch gegen DC Wiener Neustadt" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
-          </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label for="categoryInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Kategorie *</label>
@@ -510,7 +505,7 @@
               </select>
             </div>
             <div>
-              <label for="teamInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Mannschaft (optional)</label>
+              <label for="teamInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Unsere Mannschaft (optional)</label>
               <select id="teamInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <option value="">– Keine Mannschaft –</option>
                 <optgroup label="E-Dart / NDSO">
@@ -527,22 +522,33 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label for="homeAwayInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Heim / Auswärts (optional)</label>
-              <select id="homeAwayInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="">– Keine Angabe –</option>
-                <option value="Heim">Heimspiel</option>
-                <option value="Auswärts">Auswärtsspiel</option>
-              </select>
-            </div>
-            <div>
-              <label for="opponentInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Gegner (optional)</label>
-              <input type="text" id="opponentInput" placeholder="z. B. DC Aspang" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <!-- Hauptfeld für Ligamatches: Vorgedrucktes "GEGNER:" -->
+          <div id="opponentFieldWrap">
+            <label for="opponentInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Gegner *</label>
+            <div class="flex items-stretch rounded-xl border theme-input overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500">
+              <span class="px-3.5 py-2.5 theme-surface-2 border-r theme-border text-xs sm:text-sm font-extrabold tracking-wide theme-text-secondary flex items-center select-none shrink-0">
+                GEGNER:
+              </span>
+              <input type="text" id="opponentInput" placeholder="z. B. DVG Darters 1" class="w-full px-3.5 py-2.5 bg-transparent theme-text text-sm focus:outline-none" />
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <!-- Hauptfeld für andere Kategorien (Turniere, Training, Sonstiges) -->
+          <div id="titleFieldWrap" class="hidden">
+            <label for="titleInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Titel *</label>
+            <input type="text" id="titleInput" placeholder="z. B. Vereinsabend oder Weihnachtsturnier" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+          </div>
+
+          <div>
+            <label for="homeAwayInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Heim / Auswärts (optional)</label>
+            <select id="homeAwayInput" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="">– Keine Angabe –</option>
+              <option value="Heim">Heimspiel</option>
+              <option value="Auswärts">Auswärtsspiel</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label for="dateInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Datum *</label>
               <input type="date" id="dateInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -550,10 +556,6 @@
             <div>
               <label for="startTimeInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Beginn *</label>
               <input type="time" id="startTimeInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
-            <div>
-              <label for="endTimeInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Ende *</label>
-              <input type="time" id="endTimeInput" required class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
           </div>
 
@@ -727,6 +729,24 @@
             <input type="text" id="memberNameInput" required placeholder="z. B. Max Mustermann" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
 
+          <!-- Funktionen im Verein (Checkbox-/Kachel-Mehrfachauswahl) -->
+          <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="block text-xs font-bold uppercase tracking-wide theme-text-secondary">Funktionen im Verein (optional)</span>
+              <button
+                type="button"
+                id="clearMemberFunctionsBtn"
+                class="text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 underline-offset-2 hover:underline"
+              >
+                Auswahl leeren
+              </button>
+            </div>
+            <div id="memberFunctionsCheckboxGroup" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            <p class="text-[11px] theme-text-muted leading-snug">
+              Mehrfachauswahl möglich (z. B. Obmann &amp; Kapitän) – oder alles abwählen.
+            </p>
+          </div>
+
           <!-- Mannschaften (Checkbox-/Kachel-Mehrfachauswahl) -->
           <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-3">
             <div class="flex items-center justify-between gap-2">
@@ -854,6 +874,18 @@
       const TEAM_GROUPS = [
         { label: 'E-Dart / NDSO', teams: ['DV Kig 2', 'DV Kig 3', 'DV Kig 4'] },
         { label: 'Steel Dart / BSDV', teams: ['DV Steel 1', 'DV Steel 2', 'DV Steel 3'] }
+      ];
+
+      const MEMBER_FUNCTIONS = [
+        'Obmann',
+        'Obmann-Stellvertreter',
+        'Kassier',
+        'Kassier-Stellvertreter',
+        'Schriftführer',
+        'Schriftführer-Stellvertreter',
+        'Kapitän',
+        'Kapitän Stv.',
+        'Rechnungsprüfer'
       ];
 
       const CATEGORY_STYLES = {
@@ -1028,6 +1060,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         return result;
       }
 
+      function parseFunctions(raw) {
+        return parseTeams(raw);
+      }
+
       /* ----------------------------------------------------------------------
          DATENBANK-MAPPING & SUPABASE CRUD FÜR TERMINE
          ---------------------------------------------------------------------- */
@@ -1116,9 +1152,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
          ---------------------------------------------------------------------- */
       function mapRowToMember(row) {
         const teams = parseTeams(row.mannschaft);
+        const functions = parseFunctions(row.funktion);
         return {
           id: row.id,
           name: row.name || '',
+          functions,
+          funktion: functions.join(', '),
           teams,
           mannschaft: teams.join(', '),
           ort: row.ort || '',
@@ -1128,8 +1167,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
       function mapMemberToRow(member) {
         const cleanTeams = parseTeams(member.teams);
+        const cleanFunctions = parseFunctions(member.functions ?? member.funktion);
         return {
           name: member.name,
+          funktion: cleanFunctions.length > 0 ? cleanFunctions.join(', ') : null,
           mannschaft: cleanTeams.length > 0 ? cleanTeams.join(', ') : null,
           ort: member.ort || null,
           geburtsdatum: member.geburtsdatum || null
@@ -1353,6 +1394,22 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         return CATEGORY_STYLES[category] || CATEGORY_STYLES['Sonstiges'];
       }
 
+      function isLeagueCategory(category) {
+        return category === 'NDSO Ligamatch' || category === 'BSDV Ligamatch';
+      }
+
+      function getEventHeadlineHtml(evt) {
+        if (evt.opponent) {
+          return `<span class="text-xs sm:text-sm font-bold uppercase tracking-wide theme-text-secondary mr-1.5">GEGNER:</span>${escapeHtml(evt.opponent)}`;
+        }
+        return escapeHtml(evt.title);
+      }
+
+      function getEventPlainTitle(evt) {
+        if (evt.opponent) return `GEGNER: ${evt.opponent}`;
+        return evt.title || '';
+      }
+
       function getTeamBadgeStyle(team) {
         if (!team) return '';
         if (team.startsWith('DV Steel')) {
@@ -1362,26 +1419,28 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       function findDartraumOverlaps(candidate, excludeId) {
-        if (!candidate.inDartraum || !candidate.date || !candidate.startTime || !candidate.endTime) {
+        if (!candidate.inDartraum || !candidate.date || !candidate.startTime) {
           return [];
         }
+        const DEFAULT_DURATION_MIN = 180; // Standard-Fenster (3 Std.) für Überschneidungsprüfung ohne Endzeit
         const startA = timeToMinutes(candidate.startTime);
-        const endA = timeToMinutes(candidate.endTime);
-        if (endA <= startA) return [];
+        const endA = startA + DEFAULT_DURATION_MIN;
 
         return state.events.filter((other) => {
           if (excludeId && String(other.id) === String(excludeId)) return false;
-          if (!other.inDartraum || other.date !== candidate.date) return false;
+          if (!other.inDartraum || other.date !== candidate.date || !other.startTime) return false;
           const startB = timeToMinutes(other.startTime);
-          const endB = timeToMinutes(other.endTime);
+          const endB = startB + DEFAULT_DURATION_MIN;
           return startA < endB && endA > startB;
         });
       }
 
       function downloadEventICS(evt) {
         const dateClean = (evt.date || '').replace(/-/g, '');
-        const startClean = (evt.startTime || '00:00').replace(':', '') + '00';
-        const endClean = (evt.endTime || '01:00').replace(':', '') + '00';
+        const startMin = timeToMinutes(evt.startTime || '19:00');
+        const endMin = Math.min(startMin + 180, 23 * 60 + 59);
+        const startClean = (evt.startTime || '19:00').replace(':', '') + '00';
+        const endClean = `${pad2(Math.floor(endMin / 60))}${pad2(endMin % 60)}00`;
         const now = new Date();
         const stamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}Z`;
 
@@ -1398,6 +1457,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             .replace(/,/g, '\\,')
             .replace(/;/g, '\\;');
 
+        const summaryText = evt.team && evt.opponent
+          ? `${evt.team} – GEGNER: ${evt.opponent}`
+          : getEventPlainTitle(evt);
+
         const lines = [
           'BEGIN:VCALENDAR',
           'VERSION:2.0',
@@ -1407,7 +1470,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           `DTSTAMP:${stamp}`,
           `DTSTART:${dateClean}T${startClean}`,
           `DTEND:${dateClean}T${endClean}`,
-          `SUMMARY:${icsEscape(evt.title)}`,
+          `SUMMARY:${icsEscape(summaryText)}`,
           `LOCATION:${icsEscape(evt.location)}`,
           `DESCRIPTION:${icsEscape(descParts.join('\n'))}`,
           'END:VEVENT',
@@ -1537,14 +1600,15 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         formErrorBox: document.getElementById('formErrorBox'),
         overlapWarningBox: document.getElementById('overlapWarningBox'),
         eventIdInput: document.getElementById('eventIdInput'),
+        titleFieldWrap: document.getElementById('titleFieldWrap'),
         titleInput: document.getElementById('titleInput'),
         categoryInput: document.getElementById('categoryInput'),
         teamInput: document.getElementById('teamInput'),
         homeAwayInput: document.getElementById('homeAwayInput'),
+        opponentFieldWrap: document.getElementById('opponentFieldWrap'),
         opponentInput: document.getElementById('opponentInput'),
         dateInput: document.getElementById('dateInput'),
         startTimeInput: document.getElementById('startTimeInput'),
-        endTimeInput: document.getElementById('endTimeInput'),
         inDartraumCheckbox: document.getElementById('inDartraumCheckbox'),
         locationInput: document.getElementById('locationInput'),
         notesInput: document.getElementById('notesInput'),
@@ -1572,6 +1636,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         memberIdInput: document.getElementById('memberIdInput'),
         memberFormErrorBox: document.getElementById('memberFormErrorBox'),
         memberNameInput: document.getElementById('memberNameInput'),
+        memberFunctionsCheckboxGroup: document.getElementById('memberFunctionsCheckboxGroup'),
+        clearMemberFunctionsBtn: document.getElementById('clearMemberFunctionsBtn'),
         memberTeamsCheckboxGroup: document.getElementById('memberTeamsCheckboxGroup'),
         clearMemberTeamsBtn: document.getElementById('clearMemberTeamsBtn'),
         memberLocationInput: document.getElementById('memberLocationInput'),
@@ -1877,13 +1943,13 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             <button
               type="button"
               data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
-              data-lightbox-title="${escapeHtml(evt.title)}"
+              data-lightbox-title="${escapeHtml(getEventPlainTitle(evt))}"
               title="Spielbericht vergrößern"
               class="relative group/thumb w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border theme-border-strong shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-zoom-in"
             >
               <img
                 src="${escapeHtml(evt.reportImageUrl)}"
-                alt="Spielbericht ${escapeHtml(evt.title)}"
+                alt="Spielbericht ${escapeHtml(getEventPlainTitle(evt))}"
                 loading="lazy"
                 onerror="this.src='${FALLBACK_THUMB_URL}'"
                 class="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-200"
@@ -1908,9 +1974,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           `
           : '';
 
-        const timeLabel = evt.endTime
-          ? `${escapeHtml(evt.startTime)} – ${escapeHtml(evt.endTime)} Uhr`
-          : `${escapeHtml(evt.startTime)} Uhr`;
+        const timeLabel = `${escapeHtml(evt.startTime)} Uhr`;
 
         return `
           <article
@@ -1928,12 +1992,11 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                   ${overlapBadge}
                 </div>
                 <h3 class="text-sm sm:text-base font-extrabold theme-text group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                  ${escapeHtml(evt.title)}
+                  ${getEventHeadlineHtml(evt)}
                 </h3>
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs theme-text-secondary">
                   <span class="font-semibold theme-text">🕒 ${timeLabel}</span>
                   <span>📍 ${escapeHtml(evt.location)}</span>
-                  ${evt.opponent ? `<span>🎯 Gegner: ${escapeHtml(evt.opponent)}</span>` : ''}
                 </div>
               </div>
               <div class="flex items-center gap-3 shrink-0">
@@ -2061,7 +2124,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                   .map((evt) => {
                     const st = getCategoryStyle(evt.category);
                     const overlap = findDartraumOverlaps(evt, evt.id).length > 0;
-                    const timeText = evt.endTime ? `${evt.startTime}–${evt.endTime}` : evt.startTime;
+                    const timeText = `${evt.startTime} Uhr`;
                     const miniThumb = evt.reportImageUrl
                       ? `
                         <div class="pt-1.5">
@@ -2071,7 +2134,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                             loading="lazy"
                             onerror="this.src='${FALLBACK_THUMB_URL}'"
                             data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
-                            data-lightbox-title="${escapeHtml(evt.title)}"
+                            data-lightbox-title="${escapeHtml(getEventPlainTitle(evt))}"
                             title="Spielbericht vergrößern"
                             class="w-full h-14 object-cover rounded-lg border theme-border-strong hover:opacity-90 transition-opacity cursor-zoom-in"
                           />
@@ -2090,7 +2153,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                           ${overlap ? '<span title="Überschneidung im Dartraum" class="text-amber-500">⚠</span>' : ''}
                         </div>
                         <div class="text-xs font-extrabold theme-text leading-snug">
-                          ${escapeHtml(evt.title)}
+                          ${getEventHeadlineHtml(evt)}
                         </div>
                         <div class="flex flex-wrap items-center gap-1 pt-0.5">
                           ${evt.team ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>` : ''}
@@ -2276,9 +2339,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
             if (!query) return true;
             const inName = m.name.toLowerCase().includes(query);
+            const inFunktion = (m.funktion || '').toLowerCase().includes(query);
             const inOrt = (m.ort || '').toLowerCase().includes(query);
             const inTeams = memberTeams.some((t) => t.toLowerCase().includes(query));
-            return inName || inOrt || inTeams;
+            return inName || inFunktion || inOrt || inTeams;
           })
           .sort((a, b) => a.name.localeCompare(b.name, 'de'));
 
@@ -2319,6 +2383,18 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                     .join('')
                 : `<span class="inline-flex items-center px-2 py-0.5 rounded-md border border-slate-200 bg-slate-100 text-slate-600 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400 text-[11px] font-semibold">Keine Mannschaft</span>`;
 
+            const memberFunctions = Array.isArray(m.functions) ? m.functions : parseFunctions(m.funktion);
+            const funktionBadgeHtml = memberFunctions.length > 0
+              ? `<div class="flex flex-wrap items-center gap-1 pt-1">
+                   ${memberFunctions
+                     .map(
+                       (fn) =>
+                         `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-bold bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/40">⭐ ${escapeHtml(fn)}</span>`
+                     )
+                     .join('')}
+                 </div>`
+              : '';
+
             const captainActions = state.captainMode
               ? `
                 <div class="flex items-center gap-1.5 pt-2.5 mt-2.5 border-t theme-border">
@@ -2336,7 +2412,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
               <article class="theme-surface-2 border theme-border rounded-2xl p-4 flex flex-col justify-between">
                 <div class="space-y-2.5">
                   <div class="flex items-start justify-between gap-2">
-                    <h3 class="text-sm sm:text-base font-extrabold theme-text leading-snug">${escapeHtml(m.name)}</h3>
+                    <div class="min-w-0">
+                      <h3 class="text-sm sm:text-base font-extrabold theme-text leading-snug">${escapeHtml(m.name)}</h3>
+                      ${funktionBadgeHtml}
+                    </div>
                     ${birthdayBadge}
                   </div>
                   <div class="flex flex-wrap items-center gap-1.5">
@@ -2406,6 +2485,43 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       function getSelectedMemberTeamsFromForm() {
         return Array.from(
           els.memberTeamsCheckboxGroup.querySelectorAll('input[name="memberTeamOption"]:checked')
+        ).map((input) => input.value);
+      }
+
+      function renderMemberFunctionsCheckboxes(selectedFunctions) {
+        const selectedList = parseFunctions(selectedFunctions);
+        const selectedSet = new Set(selectedList);
+        const options = [...MEMBER_FUNCTIONS];
+        selectedList.forEach((fn) => {
+          if (!options.includes(fn)) options.push(fn);
+        });
+
+        els.memberFunctionsCheckboxGroup.innerHTML = options
+          .map((fn) => {
+            const checked = selectedSet.has(fn);
+            const tileBorder = checked
+              ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/50 dark:border-violet-400'
+              : 'theme-border-strong theme-surface hover:border-violet-500/50';
+
+            return `
+              <label class="flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer select-none transition-all ${tileBorder}">
+                <input
+                  type="checkbox"
+                  name="memberFunctionOption"
+                  value="${escapeHtml(fn)}"
+                  ${checked ? 'checked' : ''}
+                  class="w-4 h-4 rounded border-zinc-500 text-violet-600 focus:ring-violet-500 shrink-0"
+                />
+                <span class="text-xs sm:text-sm font-bold theme-text truncate">${escapeHtml(fn)}</span>
+              </label>
+            `;
+          })
+          .join('');
+      }
+
+      function getSelectedMemberFunctionsFromForm() {
+        return Array.from(
+          els.memberFunctionsCheckboxGroup.querySelectorAll('input[name="memberFunctionOption"]:checked')
         ).map((input) => input.value);
       }
 
@@ -2593,7 +2709,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       function requestDeleteEvent(evt) {
         openConfirmModal(
           'Termin löschen?',
-          `Möchtest du den Termin <strong class="theme-text">„${escapeHtml(evt.title)}“</strong> wirklich unwiderruflich entfernen?`,
+          `Möchtest du den Termin <strong class="theme-text">„${escapeHtml(getEventPlainTitle(evt))}“</strong> wirklich unwiderruflich entfernen?`,
           'Ja, löschen',
           async () => {
             try {
@@ -2640,14 +2756,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           ? `
             <div class="rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/70 dark:text-amber-100 p-3 text-xs space-y-1">
               <div class="font-bold">⚠ Zeitliche Überschneidung im Dartraum</div>
-              <div>Gleichzeitig eingetragen: ${overlaps.map((o) => `<strong>${escapeHtml(o.title)}</strong> (${escapeHtml(o.startTime)}–${escapeHtml(o.endTime)})`).join(', ')}</div>
+              <div>Gleichzeitig eingetragen: ${overlaps.map((o) => `<strong>${escapeHtml(getEventPlainTitle(o))}</strong> (ab ${escapeHtml(o.startTime)} Uhr)`).join(', ')}</div>
             </div>
           `
           : '';
 
-        const timeLabel = evt.endTime
-          ? `${escapeHtml(evt.startTime)} – ${escapeHtml(evt.endTime)} Uhr`
-          : `${escapeHtml(evt.startTime)} Uhr`;
+        const timeLabel = `${escapeHtml(evt.startTime)} Uhr`;
 
         const reportSectionHtml = evt.reportImageUrl
           ? `
@@ -2657,12 +2771,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                 <button
                   type="button"
                   data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
-                  data-lightbox-title="${escapeHtml(evt.title)}"
+                  data-lightbox-title="${escapeHtml(getEventPlainTitle(evt))}"
                   class="group/detail-img relative inline-block rounded-xl overflow-hidden border theme-border-strong shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-zoom-in"
                 >
                   <img
                     src="${escapeHtml(evt.reportImageUrl)}"
-                    alt="Spielbericht ${escapeHtml(evt.title)}"
+                    alt="Spielbericht ${escapeHtml(getEventPlainTitle(evt))}"
                     onerror="this.src='${FALLBACK_THUMB_URL}'"
                     class="max-h-48 w-auto object-cover group-hover/detail-img:opacity-90 transition-opacity"
                   />
@@ -2682,7 +2796,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             ${evt.homeAway ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
             ${relBadge ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>` : ''}
           </div>
-          <h3 class="text-lg font-extrabold theme-text">${escapeHtml(evt.title)}</h3>
+          <h3 class="text-lg font-extrabold theme-text">${getEventHeadlineHtml(evt)}</h3>
           ${overlapHtml}
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-1">
             <div class="rounded-xl theme-surface-2 border theme-border p-3">
@@ -2690,19 +2804,13 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
               <dd class="font-bold theme-text mt-0.5">${escapeHtml(formatDateLong(evt.date))}</dd>
             </div>
             <div class="rounded-xl theme-surface-2 border theme-border p-3">
-              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Uhrzeit</dt>
+              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Beginn</dt>
               <dd class="font-bold theme-text mt-0.5">${timeLabel}</dd>
             </div>
             <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
               <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Ort</dt>
               <dd class="font-bold theme-text mt-0.5">${escapeHtml(evt.location)}</dd>
             </div>
-            ${evt.opponent ? `
-              <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
-                <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Gegner</dt>
-                <dd class="font-bold theme-text mt-0.5">${escapeHtml(evt.opponent)}</dd>
-              </div>
-            ` : ''}
             ${evt.notes ? `
               <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2">
                 <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Notizen</dt>
@@ -2777,6 +2885,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         }
       }
 
+      function syncCategoryFields() {
+        const league = isLeagueCategory(els.categoryInput.value);
+        els.opponentFieldWrap.classList.toggle('hidden', !league);
+        els.titleFieldWrap.classList.toggle('hidden', league);
+      }
+
       function syncDartraumCheckbox() {
         const checked = els.inDartraumCheckbox.checked;
         if (checked) {
@@ -2795,13 +2909,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const candidate = {
           inDartraum: els.inDartraumCheckbox.checked,
           date: els.dateInput.value,
-          startTime: els.startTimeInput.value,
-          endTime: els.endTimeInput.value
+          startTime: els.startTimeInput.value
         };
         const overlaps = findDartraumOverlaps(candidate, els.eventIdInput.value || null);
         if (overlaps.length > 0) {
           const list = overlaps
-            .map((o) => `• ${escapeHtml(o.title)} (${escapeHtml(o.startTime)}–${escapeHtml(o.endTime)} Uhr)`)
+            .map((o) => `• ${escapeHtml(getEventPlainTitle(o))} (ab ${escapeHtml(o.startTime)} Uhr)`)
             .join('<br />');
           els.overlapWarningBox.innerHTML = `<strong>⚠ Hinweis – Überschneidung im Dartraum (${escapeHtml(formatDateShort(candidate.date))}):</strong><br />${list}`;
           els.overlapWarningBox.classList.remove('hidden');
@@ -2817,14 +2930,13 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         if (evt) {
           els.formModalTitle.textContent = 'Termin bearbeiten';
           els.eventIdInput.value = evt.id;
-          els.titleInput.value = evt.title;
           els.categoryInput.value = evt.category;
           els.teamInput.value = evt.team || '';
           els.homeAwayInput.value = evt.homeAway || '';
-          els.opponentInput.value = evt.opponent || '';
+          els.opponentInput.value = evt.opponent || (isLeagueCategory(evt.category) ? (evt.title || '').replace(/^GEGNER:\s*/i, '') : '');
+          els.titleInput.value = evt.title || '';
           els.dateInput.value = evt.date;
           els.startTimeInput.value = evt.startTime;
-          els.endTimeInput.value = evt.endTime;
           els.inDartraumCheckbox.checked = Boolean(evt.inDartraum);
           els.locationInput.value = evt.location || DARTRAUM_NAME;
           els.notesInput.value = evt.notes || '';
@@ -2832,23 +2944,29 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         } else {
           els.formModalTitle.textContent = 'Neuer Termin';
           els.eventIdInput.value = '';
-          els.titleInput.value = '';
           els.categoryInput.value = 'NDSO Ligamatch';
           els.teamInput.value = '';
           els.homeAwayInput.value = '';
           els.opponentInput.value = '';
+          els.titleInput.value = '';
           els.dateInput.value = defaultDate || todayISO;
           els.startTimeInput.value = '19:00';
-          els.endTimeInput.value = '22:00';
           els.inDartraumCheckbox.checked = true;
           els.locationInput.value = DARTRAUM_NAME;
           els.notesInput.value = '';
           resetReportImageFormState('');
         }
 
+        syncCategoryFields();
         syncDartraumCheckbox();
         openModal(els.formModal);
-        setTimeout(() => els.titleInput.focus(), 50);
+        setTimeout(() => {
+          if (isLeagueCategory(els.categoryInput.value)) {
+            els.opponentInput.focus();
+          } else {
+            els.titleInput.focus();
+          }
+        }, 50);
       }
 
       function openMemberFormModal(member) {
@@ -2857,6 +2975,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           els.memberFormModalTitle.textContent = 'Mitglied bearbeiten';
           els.memberIdInput.value = member.id;
           els.memberNameInput.value = member.name || '';
+          renderMemberFunctionsCheckboxes(member.functions || parseFunctions(member.funktion));
           renderMemberTeamsCheckboxes(member.teams || parseTeams(member.mannschaft));
           els.memberLocationInput.value = member.ort || '';
           els.memberBirthdateInput.value = member.geburtsdatum || '';
@@ -2864,6 +2983,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           els.memberFormModalTitle.textContent = 'Neues Mitglied';
           els.memberIdInput.value = '';
           els.memberNameInput.value = '';
+          renderMemberFunctionsCheckboxes([]);
           renderMemberTeamsCheckboxes([]);
           els.memberLocationInput.value = '';
           els.memberBirthdateInput.value = '';
@@ -2931,6 +3051,14 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
       els.clearMemberTeamsBtn.addEventListener('click', () => {
         renderMemberTeamsCheckboxes([]);
+      });
+
+      els.memberFunctionsCheckboxGroup.addEventListener('change', () => {
+        renderMemberFunctionsCheckboxes(getSelectedMemberFunctionsFromForm());
+      });
+
+      els.clearMemberFunctionsBtn.addEventListener('click', () => {
+        renderMemberFunctionsCheckboxes([]);
       });
 
       els.onlyDartraumToggle.addEventListener('change', () => {
@@ -3113,6 +3241,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         }
 
         const name = els.memberNameInput.value.trim();
+        const functions = getSelectedMemberFunctionsFromForm();
         const teams = getSelectedMemberTeamsFromForm();
         const ort = els.memberLocationInput.value.trim();
         const geburtsdatum = els.memberBirthdateInput.value;
@@ -3128,7 +3257,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         els.memberSubmitBtn.textContent = 'Speichert …';
 
         const existingId = els.memberIdInput.value;
-        const memberData = { name, teams, ort, geburtsdatum };
+        const memberData = { name, functions, teams, ort, geburtsdatum };
 
         try {
           if (existingId) {
@@ -3147,12 +3276,15 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         } catch (err) {
           console.error('Mitglied-Speicherfehler:', err);
           const rawMsg = String(err?.message || '');
-          if (rawMsg.toLowerCase().includes('mannschaft')) {
+          if (rawMsg.toLowerCase().includes('funktion')) {
             els.memberFormErrorBox.innerHTML =
-              '<strong>Spalte „mannschaft“ fehlt in Supabase:</strong> Bitte führe im Supabase SQL Editor folgenden Befehl aus:<br /><code class="block mt-1 font-mono">alter table public.mitglieder add column if not exists mannschaft text;</code>';
+              '<strong>Spalte „funktion“ fehlt in Supabase:</strong> Bitte führe im Supabase SQL Editor folgenden Befehl aus:<br /><code class="block mt-1 font-mono select-all">alter table public.mitglieder add column if not exists funktion text;</code>';
+          } else if (rawMsg.toLowerCase().includes('mannschaft')) {
+            els.memberFormErrorBox.innerHTML =
+              '<strong>Spalte „mannschaft“ fehlt in Supabase:</strong> Bitte führe im Supabase SQL Editor folgenden Befehl aus:<br /><code class="block mt-1 font-mono select-all">alter table public.mitglieder add column if not exists mannschaft text;</code>';
           } else if (rawMsg.toLowerCase().includes('geburtsdatum') && rawMsg.toLowerCase().includes('null')) {
             els.memberFormErrorBox.innerHTML =
-              '<strong>Geburtsdatum ist in der Datenbank noch als Pflichtfeld markiert:</strong> Bitte gib ein Geburtsdatum ein oder führe in Supabase aus:<br /><code class="block mt-1 font-mono">alter table public.mitglieder alter column geburtsdatum drop not null;</code>';
+              '<strong>Geburtsdatum ist in der Datenbank noch als Pflichtfeld markiert:</strong> Bitte gib ein Geburtsdatum ein oder führe in Supabase aus:<br /><code class="block mt-1 font-mono select-all">alter table public.mitglieder alter column geburtsdatum drop not null;</code>';
           } else {
             els.memberFormErrorBox.textContent = 'Speichern fehlgeschlagen: ' + (rawMsg || 'Bitte Berechtigung prüfen.');
           }
@@ -3242,10 +3374,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       els.newEventBtn.addEventListener('click', () => openFormModal(null));
       els.addEventOnDayBtn.addEventListener('click', () => openFormModal(null, state.selectedDate));
 
+      els.categoryInput.addEventListener('change', syncCategoryFields);
       els.inDartraumCheckbox.addEventListener('change', syncDartraumCheckbox);
       els.dateInput.addEventListener('change', updateOverlapWarning);
       els.startTimeInput.addEventListener('change', updateOverlapWarning);
-      els.endTimeInput.addEventListener('change', updateOverlapWarning);
 
       els.eventForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -3254,21 +3386,20 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           return;
         }
 
-        const title = els.titleInput.value.trim();
+        const category = els.categoryInput.value;
+        const league = isLeagueCategory(category);
+        const opponent = league ? els.opponentInput.value.trim() : '';
+        const title = league ? (opponent ? `GEGNER: ${opponent}` : '') : els.titleInput.value.trim();
         const date = els.dateInput.value;
         const startTime = els.startTimeInput.value;
-        const endTime = els.endTimeInput.value;
         const inDartraum = els.inDartraumCheckbox.checked;
         const location = inDartraum ? DARTRAUM_NAME : els.locationInput.value.trim();
 
         const errors = [];
-        if (!title) errors.push('Bitte gib einen Titel ein.');
+        if (league && !opponent) errors.push('Bitte gib einen Gegner ein.');
+        if (!league && !title) errors.push('Bitte gib einen Titel ein.');
         if (!date) errors.push('Bitte wähle ein Datum.');
-        if (!startTime || !endTime) {
-          errors.push('Bitte gib Start- und Endzeit an.');
-        } else if (timeToMinutes(endTime) <= timeToMinutes(startTime)) {
-          errors.push('Die Endzeit muss nach der Startzeit liegen.');
-        }
+        if (!startTime) errors.push('Bitte gib eine Startzeit an.');
         if (!inDartraum && !location) {
           errors.push('Bitte gib einen Ort bzw. eine Adresse ein.');
         }
@@ -3300,15 +3431,15 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
           const eventData = {
             title,
-            category: els.categoryInput.value,
+            category,
             team: els.teamInput.value,
             homeAway: els.homeAwayInput.value,
             date,
             startTime,
-            endTime,
+            endTime: '',
             inDartraum,
             location,
-            opponent: els.opponentInput.value.trim(),
+            opponent,
             notes: els.notesInput.value.trim(),
             reportImageUrl: finalReportUrl
           };
