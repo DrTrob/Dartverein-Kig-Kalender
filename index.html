@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dartverein Kirchschlag – Vereinskalender</title>
-
-  <!-- Google Fonts: Inter -->
+  <!-- Vereinslogo als Browser-Favicon -->
+  <link rel="icon" type="image/jpeg" href="DV_KIG LOGO_NEU.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS v2 Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -119,17 +119,30 @@
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <!-- Vereinslogo & Titel -->
       <div class="flex items-center gap-3 min-w-0">
-        <div class="w-10 h-10 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white dark:text-zinc-950 flex items-center justify-center shadow-sm shrink-0">
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"></circle>
-            <circle cx="12" cy="12" r="5"></circle>
-            <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
-            <line x1="12" y1="2" x2="12" y2="5"></line>
-            <line x1="12" y1="19" x2="12" y2="22"></line>
-            <line x1="2" y1="12" x2="5" y2="12"></line>
-            <line x1="19" y1="12" x2="22" y2="12"></line>
+        <button
+          type="button"
+          data-open-lightbox="DV_KIG LOGO_NEU.jpg"
+          data-lightbox-title="Dartverein Kirchschlag – Vereinslogo"
+          title="Vereinslogo vergrößern"
+          class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black ring-2 ring-emerald-500/50 hover:ring-emerald-400 flex items-center justify-center shadow-md overflow-hidden shrink-0 transition-all cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        >
+          <img
+            src="DV_KIG LOGO_NEU.jpg"
+            alt="Dartverein Kirchschlag Logo"
+            class="w-full h-full object-cover"
+            onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+          />
+          <!-- Fallback-Emblem (falls DV_KIG LOGO_NEU.jpg in der Vorschau noch nicht lokal liegt) -->
+          <svg class="hidden w-9 h-9 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="32" cy="32" r="28"></circle>
+            <circle cx="32" cy="32" r="21" stroke-opacity="0.55"></circle>
+            <circle cx="32" cy="32" r="4"></circle>
+            <line x1="16" y1="48" x2="46" y2="18" stroke-width="3"></line>
+            <line x1="48" y1="48" x2="18" y2="18" stroke-width="3"></line>
+            <polygon points="46,18 44,9 53,11 55,20" fill="currentColor" fill-opacity="0.2"></polygon>
+            <polygon points="18,18 20,9 11,11 9,20" fill="currentColor" fill-opacity="0.2"></polygon>
           </svg>
-        </div>
+        </button>
         <div class="min-w-0">
           <h1 class="text-base sm:text-lg font-extrabold tracking-tight theme-text truncate">
             Dartverein Kirchschlag
@@ -418,12 +431,27 @@
   </main>
 
   <!-- FOOTER -->
-  <footer class="text-center py-6 px-4 text-xs theme-text-muted border-t theme-border theme-surface-2 transition-colors">
-    <span>Dartverein Kirchschlag &bull; Vereinskalender &bull; Synchronisiert über Supabase</span>
-    <span id="realtimeStatusBadge" class="hidden ml-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
-      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-      Echtzeit aktiv
-    </span>
+  <footer class="py-6 px-4 text-xs theme-text-muted border-t theme-border theme-surface-2 transition-colors">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-2.5 text-center">
+      <span class="w-6 h-6 rounded-full bg-black ring-1 ring-emerald-500/40 overflow-hidden inline-flex items-center justify-center shrink-0">
+        <img
+          src="DV_KIG LOGO_NEU.jpg"
+          alt="DVK Logo"
+          class="w-full h-full object-cover"
+          onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+        />
+        <svg class="hidden w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"></circle>
+          <line x1="6" y1="18" x2="18" y2="6"></line>
+          <line x1="18" y1="18" x2="6" y2="6"></line>
+        </svg>
+      </span>
+      <span>Dartverein Kirchschlag &bull; Vereinskalender &bull; Synchronisiert über Supabase</span>
+      <span id="realtimeStatusBadge" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        Echtzeit aktiv
+      </span>
+    </div>
   </footer>
 
   <!-- ======================================================================
@@ -462,7 +490,7 @@
       <form id="eventForm" novalidate>
         <input type="hidden" id="eventIdInput" />
         <div class="p-5 space-y-4 max-h-[72vh] overflow-y-auto">
-          <div id="formErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3.5 py-2.5 text-xs font-semibold"></div>
+          <div id="formErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3.5 py-2.5 text-xs font-semibold leading-relaxed"></div>
           <div id="overlapWarningBox" class="hidden rounded-xl bg-amber-50 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-500/70 dark:text-amber-100 px-3.5 py-2.5 text-xs font-semibold"></div>
 
           <div>
@@ -540,6 +568,41 @@
             </div>
           </div>
 
+          <!-- SPIELBERICHT-FOTO (OPTIONAL) -->
+          <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <label for="reportImageInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary">
+                📷 Spielbericht-Foto (optional)
+              </label>
+              <button
+                type="button"
+                id="removeReportImageBtn"
+                class="hidden text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 underline-offset-2 hover:underline"
+              >
+                Foto entfernen
+              </button>
+            </div>
+            <input
+              type="file"
+              id="reportImageInput"
+              accept="image/*"
+              class="block w-full text-xs theme-text-secondary file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 dark:file:bg-emerald-500 dark:file:text-zinc-950 dark:hover:file:bg-emerald-400 cursor-pointer"
+            />
+            <div id="reportImagePreviewWrap" class="hidden flex items-center gap-3 pt-1">
+              <img
+                id="reportImagePreview"
+                src=""
+                alt="Spielbericht Vorschau"
+                class="w-16 h-16 rounded-xl object-cover border theme-border-strong shadow-sm shrink-0 cursor-zoom-in"
+                title="Zum Vergrößern klicken"
+              />
+              <div class="text-xs theme-text-secondary leading-snug min-w-0">
+                <div id="reportImageStatusText" class="font-bold theme-text truncate">Spielbericht hinterlegt</div>
+                <div class="text-[11px] theme-text-muted">Wird beim Speichern automatisch optimiert (max. 1600px JPEG) hochgeladen.</div>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label for="notesInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Notizen / Details (optional)</label>
             <textarea id="notesInput" rows="3" placeholder="Treffpunkt, Nenngeld, Hinweise für Spieler …" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
@@ -574,6 +637,24 @@
       </div>
       <form id="loginForm" novalidate>
         <div class="p-5 space-y-3.5">
+          <!-- Zentriertes Vereinslogo im Login-Dialog -->
+          <div class="flex justify-center pb-1">
+            <div class="w-16 h-16 rounded-full bg-black ring-2 ring-emerald-500/50 overflow-hidden shadow-md flex items-center justify-center">
+              <img
+                src="DV_KIG LOGO_NEU.jpg"
+                alt="Dartverein Kirchschlag Logo"
+                class="w-full h-full object-cover"
+                onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+              />
+              <svg class="hidden w-12 h-12 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="32" cy="32" r="28"></circle>
+                <circle cx="32" cy="32" r="21" stroke-opacity="0.55"></circle>
+                <circle cx="32" cy="32" r="4"></circle>
+                <line x1="16" y1="48" x2="46" y2="18" stroke-width="3"></line>
+                <line x1="48" y1="48" x2="18" y2="18" stroke-width="3"></line>
+              </svg>
+            </div>
+          </div>
           <div id="loginErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3 py-2 text-xs font-semibold"></div>
           <div>
             <label for="loginEmailInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">E-Mail-Adresse</label>
@@ -584,7 +665,7 @@
             <input type="password" id="loginPasswordInput" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
           <p class="text-xs theme-text-muted leading-relaxed">
-            Melde dich mit deinem Kapitäns-Zugang an, um Termine und Mitglieder anzulegen, zu bearbeiten oder zu löschen.
+            Melde dich mit deinem Kapitäns-Zugang an, um Termine, Spielbericht-Fotos und Mitglieder anzulegen, zu bearbeiten oder zu löschen.
           </p>
         </div>
         <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
@@ -689,11 +770,49 @@
     </div>
   </div>
 
+  <!-- ======================================================================
+       MODAL 6: SPIELBERICHT-LIGHTBOX (GROSSANSICHT)
+       ====================================================================== -->
+  <div id="imageLightboxModal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm hidden flex-col items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
+    <div class="w-full max-w-5xl flex items-center justify-between gap-3 mb-3 text-white">
+      <div id="lightboxTitle" class="text-xs sm:text-sm font-bold truncate">Spielbericht</div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a
+          id="lightboxOpenNewTab"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition-colors"
+        >
+          Original öffnen
+        </a>
+        <button
+          type="button"
+          data-close-modal="imageLightboxModal"
+          class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+          aria-label="Schließen"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <img
+      id="lightboxImage"
+      src=""
+      alt="Spielbericht Großansicht"
+      onerror="this.src='https://placehold.co/800x600/18181b/a1a1aa?text=Foto+konnte+nicht+geladen+werden'"
+      class="max-h-[82vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/15 animate-modal"
+    />
+  </div>
+
   <!-- TOAST-BENACHRICHTIGUNG -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-xl opacity-0 pointer-events-none transition-all duration-200"></div>
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[70] px-4 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-xl opacity-0 pointer-events-none transition-all duration-200"></div>
 
   <!-- ======================================================================
-       JAVASCRIPT – ANWENDUNGSLOGIK, SUPABASE, REALTIME & THEME-STEUERUNG
+       JAVASCRIPT – ANWENDUNGSLOGIK, SUPABASE, STORAGE, REALTIME & THEME
        ====================================================================== -->
   <script>
     (function () {
@@ -706,9 +825,11 @@
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2Z2dmbXRiY2F5bG9jeWxocXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxODk3MjcsImV4cCI6MjExMDc2NTcyN30.vhWkSvCJ_QihJ9HTMyKKu5K-DQQ78JYLOCresOUxE1Q';
       const TABLE_NAME = 'termine';
       const MEMBERS_TABLE_NAME = 'mitglieder';
+      const REPORT_BUCKET = 'spielberichte';
 
       const THEME_STORAGE_KEY = 'dvk_kalender_theme';
       const DARTRAUM_NAME = 'Dartraum Kirchschlag';
+      const FALLBACK_THUMB_URL = 'https://placehold.co/160x160/18181b/a1a1aa?text=Foto';
 
       let supabaseClient = null;
       try {
@@ -775,6 +896,121 @@
       const WEEKDAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
       /* ----------------------------------------------------------------------
+         BILD-KOMPRIMIERUNG (CANVAS) & SUPABASE STORAGE FÜR SPIELBERICHTE
+         ---------------------------------------------------------------------- */
+      function compressImageToJpeg(file, maxDimension = 1600, quality = 0.82) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('Bilddatei konnte nicht gelesen werden.'));
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('Ungültiges Bildformat.'));
+            img.onload = () => {
+              let { width, height } = img;
+              if (width > maxDimension || height > maxDimension) {
+                if (width >= height) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                } else {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              canvas.toBlob(
+                (blob) => {
+                  if (!blob) {
+                    reject(new Error('Bildkomprimierung fehlgeschlagen.'));
+                    return;
+                  }
+                  resolve(blob);
+                },
+                'image/jpeg',
+                quality
+              );
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function uploadReportImageToSupabase(file) {
+        const compressedBlob = await compressImageToJpeg(file, 1600, 0.82);
+        const fileName = `bericht-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from(REPORT_BUCKET)
+          .upload(fileName, compressedBlob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          const err = new Error(uploadError.message || 'Upload fehlgeschlagen');
+          err.isStorageError = true;
+          throw err;
+        }
+
+        const { data } = supabaseClient.storage.from(REPORT_BUCKET).getPublicUrl(fileName);
+        return data.publicUrl;
+      }
+
+      async function deleteReportImageFromSupabase(publicUrl) {
+        if (!supabaseClient || !publicUrl) return;
+        try {
+          const marker = `/storage/v1/object/public/${REPORT_BUCKET}/`;
+          const idx = publicUrl.indexOf(marker);
+          if (idx === -1) return;
+          const filePath = decodeURIComponent(publicUrl.slice(idx + marker.length));
+          if (!filePath) return;
+          await supabaseClient.storage.from(REPORT_BUCKET).remove([filePath]);
+        } catch (err) {
+          console.warn('Altes Spielbericht-Foto konnte nicht aus Storage entfernt werden:', err);
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         KLARE FEHLERDIAGNOSE FÜR SUPABASE (SPALTEN / STORAGE-BUCKET / RLS)
+         ---------------------------------------------------------------------- */
+      function buildEventSaveErrorHtml(err) {
+        const rawMsg = String(err?.message || '');
+        const lower = rawMsg.toLowerCase();
+
+        if (lower.includes('spielbericht_url') || (lower.includes('column') && lower.includes('spielbericht'))) {
+          return `
+            <strong>Spalte „spielbericht_url“ fehlt in der Tabelle „termine“:</strong>
+            Bitte führe im Supabase SQL Editor folgenden Befehl aus:
+            <code class="block mt-1.5 p-2 rounded-lg bg-black/10 dark:bg-black/40 font-mono text-[11px] overflow-x-auto select-all">alter table public.termine add column if not exists spielbericht_url text;</code>
+          `;
+        }
+
+        if (
+          err?.isStorageError ||
+          lower.includes('bucket') ||
+          lower.includes('storage') ||
+          lower.includes('row-level security') ||
+          lower.includes('not found')
+        ) {
+          return `
+            <strong>Spielbericht-Upload fehlgeschlagen (${escapeHtml(rawMsg || 'Bucket oder Berechtigung fehlt')}):</strong>
+            Bitte stelle sicher, dass der Storage-Bucket „spielberichte“ inkl. Zugriffsrechten in Supabase existiert (SQL Editor):
+            <code class="block mt-1.5 p-2 rounded-lg bg-black/10 dark:bg-black/40 font-mono text-[11px] whitespace-pre-wrap overflow-x-auto select-all">insert into storage.buckets (id, name, public) values ('spielberichte', 'spielberichte', true) on conflict (id) do nothing;
+create policy "Spielberichte öffentlich lesbar" on storage.objects for select using (bucket_id = 'spielberichte');
+create policy "Kapitäne dürfen Spielberichte hochladen" on storage.objects for insert to authenticated with check (bucket_id = 'spielberichte');
+create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for delete to authenticated using (bucket_id = 'spielberichte');</code>
+          `;
+        }
+
+        return `<strong>Speichern fehlgeschlagen:</strong> ${escapeHtml(rawMsg || 'Bitte Berechtigung oder Internetverbindung prüfen.')}`;
+      }
+
+      /* ----------------------------------------------------------------------
          HILFSFUNKTION: MANNSCHAFTEN PARSEN (0, 1 ODER MEHRERE TEAMS)
          ---------------------------------------------------------------------- */
       function parseTeams(raw) {
@@ -809,7 +1045,8 @@
           inDartraum: isDartraum,
           location: row.location || (isDartraum ? DARTRAUM_NAME : ''),
           opponent: row.opponent || '',
-          notes: row.notes || ''
+          notes: row.notes || '',
+          reportImageUrl: row.spielbericht_url || ''
         };
       }
 
@@ -825,7 +1062,8 @@
           end_time: evt.endTime || null,
           is_dartraum: Boolean(evt.inDartraum),
           location: evt.inDartraum ? DARTRAUM_NAME : evt.location,
-          notes: evt.notes || null
+          notes: evt.notes || null,
+          spielbericht_url: evt.reportImageUrl || null
         };
       }
 
@@ -1205,7 +1443,7 @@
         membersLoading: true,
         membersError: null,
         memberSearch: '',
-        memberTeamFilter: 'all', // 'all' | 'none' | Teamname
+        memberTeamFilter: 'all',
         realtimeConnected: false,
         view: 'list',
         categoryFilter: 'all',
@@ -1219,7 +1457,12 @@
         weekStartDate: currentWeekStartISO,
         selectedDate: todayISO,
         confirmCallback: null,
-        toastTimer: null
+        toastTimer: null,
+        // Spielbericht-Foto-Status im Termin-Formular
+        pendingReportFile: null,
+        currentReportUrl: '',
+        removeCurrentReportImage: false,
+        previewObjectUrl: null
       };
 
       /* ----------------------------------------------------------------------
@@ -1305,6 +1548,11 @@
         inDartraumCheckbox: document.getElementById('inDartraumCheckbox'),
         locationInput: document.getElementById('locationInput'),
         notesInput: document.getElementById('notesInput'),
+        reportImageInput: document.getElementById('reportImageInput'),
+        reportImagePreviewWrap: document.getElementById('reportImagePreviewWrap'),
+        reportImagePreview: document.getElementById('reportImagePreview'),
+        reportImageStatusText: document.getElementById('reportImageStatusText'),
+        removeReportImageBtn: document.getElementById('removeReportImageBtn'),
 
         loginModal: document.getElementById('loginModal'),
         loginForm: document.getElementById('loginForm'),
@@ -1330,11 +1578,16 @@
         memberBirthdateInput: document.getElementById('memberBirthdateInput'),
         memberSubmitBtn: document.getElementById('memberSubmitBtn'),
 
+        imageLightboxModal: document.getElementById('imageLightboxModal'),
+        lightboxImage: document.getElementById('lightboxImage'),
+        lightboxTitle: document.getElementById('lightboxTitle'),
+        lightboxOpenNewTab: document.getElementById('lightboxOpenNewTab'),
+
         toast: document.getElementById('toast')
       };
 
       /* ----------------------------------------------------------------------
-         TOAST-MELDUNG
+         TOAST-MELDUNG & LIGHTBOX
          ---------------------------------------------------------------------- */
       function showToast(message) {
         els.toast.textContent = message;
@@ -1345,6 +1598,14 @@
           els.toast.classList.add('opacity-0', 'pointer-events-none');
           els.toast.classList.remove('opacity-100');
         }, 2800);
+      }
+
+      function openLightbox(url, title) {
+        if (!url) return;
+        els.lightboxImage.src = url;
+        els.lightboxTitle.textContent = title ? `Spielbericht – ${title}` : 'Spielbericht';
+        els.lightboxOpenNewTab.href = url;
+        openModal(els.imageLightboxModal);
       }
 
       /* ----------------------------------------------------------------------
@@ -1586,7 +1847,7 @@
       }
 
       /* ----------------------------------------------------------------------
-         TERMINKARTE ERZEUGEN
+         TERMINKARTE ERZEUGEN (INKL. MINI-SPIELBERICHT-VORSCHAU)
          ---------------------------------------------------------------------- */
       function buildEventCardHtml(evt) {
         const style = getCategoryStyle(evt.category);
@@ -1611,9 +1872,32 @@
              </span>`
           : '';
 
+        const reportThumbHtml = evt.reportImageUrl
+          ? `
+            <button
+              type="button"
+              data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
+              data-lightbox-title="${escapeHtml(evt.title)}"
+              title="Spielbericht vergrößern"
+              class="relative group/thumb w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border theme-border-strong shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-zoom-in"
+            >
+              <img
+                src="${escapeHtml(evt.reportImageUrl)}"
+                alt="Spielbericht ${escapeHtml(evt.title)}"
+                loading="lazy"
+                onerror="this.src='${FALLBACK_THUMB_URL}'"
+                class="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-200"
+              />
+              <span class="absolute inset-x-0 bottom-0 bg-black/65 text-white text-[9px] font-bold py-0.5 text-center">
+                🔍 Bericht
+              </span>
+            </button>
+          `
+          : '';
+
         const captainControls = state.captainMode
           ? `
-            <div class="flex items-center gap-1.5 pt-2 sm:pt-0 sm:pl-3">
+            <div class="flex items-center gap-1.5 pt-2 sm:pt-0">
               <button type="button" data-edit-event="${escapeHtml(evt.id)}" class="px-2.5 py-1.5 rounded-lg border theme-btn-neutral text-xs font-semibold">
                 Bearbeiten
               </button>
@@ -1634,7 +1918,7 @@
             class="group cursor-pointer theme-surface border theme-border border-l-4 ${style.accent} rounded-2xl p-4 hover:shadow-md transition-all ${isPast ? 'opacity-70' : ''}"
           >
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div class="space-y-1.5 min-w-0">
+              <div class="space-y-1.5 min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5">
                   <span class="px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${style.badge}">
                     ${escapeHtml(evt.category)}
@@ -1652,7 +1936,10 @@
                   ${evt.opponent ? `<span>🎯 Gegner: ${escapeHtml(evt.opponent)}</span>` : ''}
                 </div>
               </div>
-              ${captainControls}
+              <div class="flex items-center gap-3 shrink-0">
+                ${reportThumbHtml}
+                ${captainControls}
+              </div>
             </div>
           </article>
         `;
@@ -1728,7 +2015,7 @@
       }
 
       /* ----------------------------------------------------------------------
-         RENDERING: WOCHENANSICHT (inkl. HEUTE / MORGEN / DIESE WOCHE Badges)
+         RENDERING: WOCHENANSICHT (inkl. Mini-Spielbericht-Vorschau)
          ---------------------------------------------------------------------- */
       function renderWeekView() {
         const weekStart = state.weekStartDate;
@@ -1775,11 +2062,28 @@
                     const st = getCategoryStyle(evt.category);
                     const overlap = findDartraumOverlaps(evt, evt.id).length > 0;
                     const timeText = evt.endTime ? `${evt.startTime}–${evt.endTime}` : evt.startTime;
+                    const miniThumb = evt.reportImageUrl
+                      ? `
+                        <div class="pt-1.5">
+                          <img
+                            src="${escapeHtml(evt.reportImageUrl)}"
+                            alt="Spielbericht"
+                            loading="lazy"
+                            onerror="this.src='${FALLBACK_THUMB_URL}'"
+                            data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
+                            data-lightbox-title="${escapeHtml(evt.title)}"
+                            title="Spielbericht vergrößern"
+                            class="w-full h-14 object-cover rounded-lg border theme-border-strong hover:opacity-90 transition-opacity cursor-zoom-in"
+                          />
+                        </div>
+                      `
+                      : '';
                     return `
-                      <button
-                        type="button"
+                      <div
+                        role="button"
+                        tabindex="0"
                         data-open-event="${escapeHtml(evt.id)}"
-                        class="w-full text-left rounded-xl border theme-border border-l-4 ${st.accent} theme-surface-2 hover:shadow-sm p-2.5 space-y-1 transition-all"
+                        class="w-full text-left cursor-pointer rounded-xl border theme-border border-l-4 ${st.accent} theme-surface-2 hover:shadow-sm p-2.5 space-y-1 transition-all"
                       >
                         <div class="flex items-center justify-between gap-1 text-[11px] font-bold theme-text-secondary">
                           <span>${escapeHtml(timeText)}</span>
@@ -1793,7 +2097,8 @@
                           ${evt.homeAway ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
                         </div>
                         <div class="text-[10px] theme-text-muted truncate">📍 ${escapeHtml(evt.location)}</div>
-                      </button>
+                        ${miniThumb}
+                      </div>
                     `;
                   })
                   .join('');
@@ -1872,7 +2177,7 @@
               return `
                 <div class="flex items-center gap-1 truncate text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${st.badge}">
                   <span class="w-1.5 h-1.5 rounded-full ${st.dot} shrink-0"></span>
-                  <span class="truncate">${escapeHtml(evt.team || evt.title)}</span>
+                  <span class="truncate">${evt.reportImageUrl ? '📷 ' : ''}${escapeHtml(evt.team || evt.title)}</span>
                 </div>
               `;
             })
@@ -2174,9 +2479,26 @@
 
       /* ----------------------------------------------------------------------
          SUPABASE REALTIME (ECHTZEIT-AKTUALISIERUNG)
+         In eingebetteten Vorschau-Iframes deaktiviert, um SecurityError zu vermeiden.
          ---------------------------------------------------------------------- */
+      function isRealtimeAllowed() {
+        try {
+          if (typeof window.WebSocket !== 'function') return false;
+          if (window.self !== window.top) return false;
+          const proto = window.location.protocol;
+          if (proto === 'about:' || proto === 'blob:' || proto === 'data:') return false;
+          return true;
+        } catch (_err) {
+          return false;
+        }
+      }
+
       function setupRealtimeSubscriptions() {
-        if (!supabaseClient) return;
+        if (!supabaseClient || !isRealtimeAllowed()) {
+          state.realtimeConnected = false;
+          els.realtimeStatusBadge.classList.add('hidden');
+          return;
+        }
 
         try {
           supabaseClient
@@ -2254,7 +2576,8 @@
           els.formModal,
           els.loginModal,
           els.confirmModal,
-          els.memberFormModal
+          els.memberFormModal,
+          els.imageLightboxModal
         ].some((m) => !m.classList.contains('hidden'));
         if (!stillOpen) document.body.style.overflow = '';
       }
@@ -2275,6 +2598,9 @@
           async () => {
             try {
               await deleteEventInSupabase(evt.id);
+              if (evt.reportImageUrl) {
+                deleteReportImageFromSupabase(evt.reportImageUrl);
+              }
               state.events = state.events.filter((item) => String(item.id) !== String(evt.id));
               renderAll();
               showToast('Termin wurde gelöscht');
@@ -2323,6 +2649,32 @@
           ? `${escapeHtml(evt.startTime)} – ${escapeHtml(evt.endTime)} Uhr`
           : `${escapeHtml(evt.startTime)} Uhr`;
 
+        const reportSectionHtml = evt.reportImageUrl
+          ? `
+            <div class="rounded-xl theme-surface-2 border theme-border p-3 sm:col-span-2 space-y-2">
+              <dt class="text-[11px] font-bold uppercase tracking-wide theme-text-muted">Spielbericht</dt>
+              <dd>
+                <button
+                  type="button"
+                  data-open-lightbox="${escapeHtml(evt.reportImageUrl)}"
+                  data-lightbox-title="${escapeHtml(evt.title)}"
+                  class="group/detail-img relative inline-block rounded-xl overflow-hidden border theme-border-strong shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-zoom-in"
+                >
+                  <img
+                    src="${escapeHtml(evt.reportImageUrl)}"
+                    alt="Spielbericht ${escapeHtml(evt.title)}"
+                    onerror="this.src='${FALLBACK_THUMB_URL}'"
+                    class="max-h-48 w-auto object-cover group-hover/detail-img:opacity-90 transition-opacity"
+                  />
+                  <span class="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg bg-black/70 text-white text-[11px] font-bold">
+                    🔍 Groß anzeigen
+                  </span>
+                </button>
+              </dd>
+            </div>
+          `
+          : '';
+
         els.detailModalBody.innerHTML = `
           <div class="flex flex-wrap items-center gap-1.5">
             <span class="px-2.5 py-0.5 rounded-full border text-xs font-bold ${style.badge}">${escapeHtml(evt.category)}</span>
@@ -2357,6 +2709,7 @@
                 <dd class="theme-text-secondary mt-0.5 whitespace-pre-line">${escapeHtml(evt.notes)}</dd>
               </div>
             ` : ''}
+            ${reportSectionHtml}
           </dl>
         `;
 
@@ -2400,8 +2753,30 @@
       }
 
       /* ----------------------------------------------------------------------
-         FORMULAR-LOGIK (TERMINE & MITGLIEDER)
+         FORMULAR-LOGIK (TERMINE, SPIELBERICHT-FOTO & MITGLIEDER)
          ---------------------------------------------------------------------- */
+      function resetReportImageFormState(existingUrl) {
+        if (state.previewObjectUrl) {
+          URL.revokeObjectURL(state.previewObjectUrl);
+          state.previewObjectUrl = null;
+        }
+        state.pendingReportFile = null;
+        state.currentReportUrl = existingUrl || '';
+        state.removeCurrentReportImage = false;
+        els.reportImageInput.value = '';
+
+        if (existingUrl) {
+          els.reportImagePreview.src = existingUrl;
+          els.reportImageStatusText.textContent = 'Aktueller Spielbericht gespeichert';
+          els.reportImagePreviewWrap.classList.remove('hidden');
+          els.removeReportImageBtn.classList.remove('hidden');
+        } else {
+          els.reportImagePreview.src = '';
+          els.reportImagePreviewWrap.classList.add('hidden');
+          els.removeReportImageBtn.classList.add('hidden');
+        }
+      }
+
       function syncDartraumCheckbox() {
         const checked = els.inDartraumCheckbox.checked;
         if (checked) {
@@ -2453,6 +2828,7 @@
           els.inDartraumCheckbox.checked = Boolean(evt.inDartraum);
           els.locationInput.value = evt.location || DARTRAUM_NAME;
           els.notesInput.value = evt.notes || '';
+          resetReportImageFormState(evt.reportImageUrl || '');
         } else {
           els.formModalTitle.textContent = 'Neuer Termin';
           els.eventIdInput.value = '';
@@ -2467,6 +2843,7 @@
           els.inDartraumCheckbox.checked = true;
           els.locationInput.value = DARTRAUM_NAME;
           els.notesInput.value = '';
+          resetReportImageFormState('');
         }
 
         syncDartraumCheckbox();
@@ -2548,7 +2925,6 @@
         renderMembersView();
       });
 
-      // Kachel-Styling live aktualisieren, wenn im Mitglieder-Formular eine Mannschaft angeklickt wird
       els.memberTeamsCheckboxGroup.addEventListener('change', () => {
         renderMemberTeamsCheckboxes(getSelectedMemberTeamsFromForm());
       });
@@ -2582,7 +2958,17 @@
         renderWeekView();
       });
 
+      // Globaler Lightbox-Klick-Handler (Liste, Woche, Monat & Detail-Modal)
+      document.addEventListener('click', (e) => {
+        const lightboxTrigger = e.target.closest('[data-open-lightbox]');
+        if (lightboxTrigger) {
+          e.stopPropagation();
+          openLightbox(lightboxTrigger.dataset.openLightbox, lightboxTrigger.dataset.lightboxTitle);
+        }
+      });
+
       els.weekGrid.addEventListener('click', (e) => {
+        if (e.target.closest('[data-open-lightbox]')) return;
         const addBtn = e.target.closest('[data-week-add-date]');
         if (addBtn) {
           openFormModal(null, addBtn.dataset.weekAddDate);
@@ -2628,6 +3014,8 @@
       });
 
       function handleEventContainerClick(e) {
+        if (e.target.closest('[data-open-lightbox]')) return;
+
         const editBtn = e.target.closest('[data-edit-event]');
         if (editBtn) {
           e.stopPropagation();
@@ -2653,6 +3041,47 @@
 
       els.listViewContainer.addEventListener('click', handleEventContainerClick);
       els.selectedDayList.addEventListener('click', handleEventContainerClick);
+
+      // Spielbericht-Foto-Auswahl im Termin-Formular
+      els.reportImageInput.addEventListener('change', () => {
+        const file = els.reportImageInput.files && els.reportImageInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          showToast('Bitte eine gültige Bilddatei auswählen.');
+          els.reportImageInput.value = '';
+          return;
+        }
+        if (state.previewObjectUrl) {
+          URL.revokeObjectURL(state.previewObjectUrl);
+        }
+        state.pendingReportFile = file;
+        state.removeCurrentReportImage = false;
+        state.previewObjectUrl = URL.createObjectURL(file);
+
+        els.reportImagePreview.src = state.previewObjectUrl;
+        els.reportImageStatusText.textContent = `Neues Foto: ${file.name}`;
+        els.reportImagePreviewWrap.classList.remove('hidden');
+        els.removeReportImageBtn.classList.remove('hidden');
+      });
+
+      els.reportImagePreview.addEventListener('click', () => {
+        if (els.reportImagePreview.src) {
+          openLightbox(els.reportImagePreview.src, els.titleInput.value.trim() || 'Vorschau');
+        }
+      });
+
+      els.removeReportImageBtn.addEventListener('click', () => {
+        if (state.previewObjectUrl) {
+          URL.revokeObjectURL(state.previewObjectUrl);
+          state.previewObjectUrl = null;
+        }
+        state.pendingReportFile = null;
+        state.removeCurrentReportImage = true;
+        els.reportImageInput.value = '';
+        els.reportImagePreview.src = '';
+        els.reportImagePreviewWrap.classList.add('hidden');
+        els.removeReportImageBtn.classList.add('hidden');
+      });
 
       els.newMemberBtn.addEventListener('click', () => openMemberFormModal(null));
       els.bannerNewMemberBtn.addEventListener('click', () => openMemberFormModal(null));
@@ -2852,24 +3281,38 @@
 
         els.formErrorBox.classList.add('hidden');
         els.eventSubmitBtn.disabled = true;
-        els.eventSubmitBtn.textContent = 'Speichert …';
+        els.eventSubmitBtn.textContent = state.pendingReportFile ? 'Foto wird hochgeladen …' : 'Speichert …';
 
         const existingId = els.eventIdInput.value;
-        const eventData = {
-          title,
-          category: els.categoryInput.value,
-          team: els.teamInput.value,
-          homeAway: els.homeAwayInput.value,
-          date,
-          startTime,
-          endTime,
-          inDartraum,
-          location,
-          opponent: els.opponentInput.value.trim(),
-          notes: els.notesInput.value.trim()
-        };
+        let finalReportUrl = state.removeCurrentReportImage ? '' : state.currentReportUrl;
+        let oldUrlToDelete = null;
 
         try {
+          if (state.pendingReportFile) {
+            const uploadedUrl = await uploadReportImageToSupabase(state.pendingReportFile);
+            if (state.currentReportUrl) oldUrlToDelete = state.currentReportUrl;
+            finalReportUrl = uploadedUrl;
+          } else if (state.removeCurrentReportImage && state.currentReportUrl) {
+            oldUrlToDelete = state.currentReportUrl;
+          }
+
+          els.eventSubmitBtn.textContent = 'Speichert …';
+
+          const eventData = {
+            title,
+            category: els.categoryInput.value,
+            team: els.teamInput.value,
+            homeAway: els.homeAwayInput.value,
+            date,
+            startTime,
+            endTime,
+            inDartraum,
+            location,
+            opponent: els.opponentInput.value.trim(),
+            notes: els.notesInput.value.trim(),
+            reportImageUrl: finalReportUrl
+          };
+
           if (existingId) {
             const updated = await updateEventInSupabase(existingId, eventData);
             state.events = state.events.map((item) => (String(item.id) === String(existingId) ? updated : item));
@@ -2882,17 +3325,22 @@
             showToast('Neuer Termin gespeichert');
           }
 
+          if (oldUrlToDelete) {
+            deleteReportImageFromSupabase(oldUrlToDelete);
+          }
+
           state.selectedDate = date;
           state.weekStartDate = getMondayISO(date);
           const d = parseISODate(date);
           state.currentYear = d.getFullYear();
           state.currentMonth = d.getMonth();
 
+          resetReportImageFormState('');
           closeModal(els.formModal);
           renderAll();
         } catch (err) {
           console.error('Supabase Speicherfehler:', err);
-          els.formErrorBox.textContent = 'Speichern fehlgeschlagen: ' + (err?.message || 'Bitte Berechtigung prüfen.');
+          els.formErrorBox.innerHTML = buildEventSaveErrorHtml(err);
           els.formErrorBox.classList.remove('hidden');
         } finally {
           els.eventSubmitBtn.disabled = false;
@@ -2907,7 +3355,14 @@
         });
       });
 
-      [els.detailModal, els.formModal, els.loginModal, els.confirmModal, els.memberFormModal].forEach((modal) => {
+      [
+        els.detailModal,
+        els.formModal,
+        els.loginModal,
+        els.confirmModal,
+        els.memberFormModal,
+        els.imageLightboxModal
+      ].forEach((modal) => {
         modal.addEventListener('click', (e) => {
           if (e.target === modal) closeModal(modal);
         });
@@ -2915,6 +3370,10 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+          if (!els.imageLightboxModal.classList.contains('hidden')) {
+            closeModal(els.imageLightboxModal);
+            return;
+          }
           [els.confirmModal, els.loginModal, els.formModal, els.memberFormModal, els.detailModal].forEach((modal) => {
             if (!modal.classList.contains('hidden')) closeModal(modal);
           });
