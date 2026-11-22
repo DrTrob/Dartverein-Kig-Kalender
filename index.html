@@ -2,13 +2,25 @@
 <html lang="de" data-theme="dark" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Dartverein Kirchschlag – Vereinskalender</title>
-  <!-- Vereinslogo als Browser-Favicon -->
+
+  <!-- App-Modus am Handy (PWA / Home-Bildschirm für iOS & Android) -->
+  <meta name="application-name" content="DVK Kalender" />
+  <meta name="apple-mobile-web-app-title" content="DVK Kalender" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#09090b" />
+
+  <!-- Vereinslogo als Browser-Favicon & Handy-App-Icon -->
   <link rel="icon" type="image/jpeg" href="DV_KIG LOGO_NEU.jpg" />
+  <link rel="apple-touch-icon" href="DV_KIG LOGO_NEU.jpg" />
+
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -570,6 +582,55 @@
             </div>
           </div>
 
+          <!-- ERGEBNIS (OPTIONAL – NUR KAPITÄNE) -->
+          <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="block text-xs font-bold uppercase tracking-wide theme-text-secondary">
+                🏆 Ergebnis (optional)
+              </span>
+              <button
+                type="button"
+                id="clearScoreBtn"
+                class="hidden text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 underline-offset-2 hover:underline"
+              >
+                Ergebnis leeren
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2">
+                <div class="w-24">
+                  <label for="scoreOwnInput" class="block text-[10px] font-bold uppercase tracking-wide theme-text-muted mb-1">Wir</label>
+                  <input
+                    type="number"
+                    id="scoreOwnInput"
+                    min="0"
+                    max="999"
+                    inputmode="numeric"
+                    placeholder="12"
+                    class="w-full px-3 py-2 rounded-xl border theme-input text-center text-base font-extrabold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <span class="text-xl font-black theme-text-muted pt-4">:</span>
+                <div class="w-24">
+                  <label for="scoreOppInput" class="block text-[10px] font-bold uppercase tracking-wide theme-text-muted mb-1">Gegner</label>
+                  <input
+                    type="number"
+                    id="scoreOppInput"
+                    min="0"
+                    max="999"
+                    inputmode="numeric"
+                    placeholder="8"
+                    class="w-full px-3 py-2 rounded-xl border theme-input text-center text-base font-extrabold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+              <div id="scoreLivePreview" class="hidden pt-4"></div>
+            </div>
+            <p class="text-[11px] theme-text-muted leading-snug">
+              Gewonnen, Verloren oder Unentschieden wird automatisch aus eurer Punktzahl berechnet.
+            </p>
+          </div>
+
           <!-- SPIELBERICHT-FOTO (OPTIONAL) -->
           <div class="rounded-xl theme-surface-2 border theme-border p-3.5 space-y-2.5">
             <div class="flex items-center justify-between gap-2">
@@ -667,7 +728,7 @@
             <input type="password" id="loginPasswordInput" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
           <p class="text-xs theme-text-muted leading-relaxed">
-            Melde dich mit deinem Kapitäns-Zugang an, um Termine, Spielbericht-Fotos und Mitglieder anzulegen, zu bearbeiten oder zu löschen.
+            Melde dich mit deinem Kapitäns-Zugang an, um Termine, Ergebnisse, Spielbericht-Fotos und Mitglieder zu verwalten.
           </p>
         </div>
         <div class="px-5 py-3.5 theme-surface-2 border-t theme-border flex items-center justify-end gap-2">
@@ -861,7 +922,7 @@
       }
 
       /* ----------------------------------------------------------------------
-         KATEGORIEN, MANNSCHAFTEN & FARBSCHEMA
+         KATEGORIEN, MANNSCHAFTEN, FUNKTIONEN & FARBSCHEMA
          ---------------------------------------------------------------------- */
       const CATEGORIES = [
         'NDSO Ligamatch',
@@ -1014,6 +1075,14 @@
         const rawMsg = String(err?.message || '');
         const lower = rawMsg.toLowerCase();
 
+        if (lower.includes('ergebnis')) {
+          return `
+            <strong>Spalte „ergebnis“ fehlt in der Tabelle „termine“:</strong>
+            Bitte führe im Supabase SQL Editor folgenden Befehl aus:
+            <code class="block mt-1.5 p-2 rounded-lg bg-black/10 dark:bg-black/40 font-mono text-[11px] overflow-x-auto select-all">alter table public.termine add column if not exists ergebnis text;</code>
+          `;
+        }
+
         if (lower.includes('spielbericht_url') || (lower.includes('column') && lower.includes('spielbericht'))) {
           return `
             <strong>Spalte „spielbericht_url“ fehlt in der Tabelle „termine“:</strong>
@@ -1043,7 +1112,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         HILFSFUNKTION: MANNSCHAFTEN PARSEN (0, 1 ODER MEHRERE TEAMS)
+         HILFSFUNKTIONEN: MANNSCHAFTEN & FUNKTIONEN PARSEN
          ---------------------------------------------------------------------- */
       function parseTeams(raw) {
         if (!raw) return [];
@@ -1082,6 +1151,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           location: row.location || (isDartraum ? DARTRAUM_NAME : ''),
           opponent: row.opponent || '',
           notes: row.notes || '',
+          result: row.ergebnis || '',
           reportImageUrl: row.spielbericht_url || ''
         };
       }
@@ -1099,6 +1169,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           is_dartraum: Boolean(evt.inDartraum),
           location: evt.inDartraum ? DARTRAUM_NAME : evt.location,
           notes: evt.notes || null,
+          ergebnis: evt.result || null,
           spielbericht_url: evt.reportImageUrl || null
         };
       }
@@ -1241,7 +1312,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         HILFSFUNKTIONEN (DATUM, ZEIT-BADGES, GEBURTSTAGE, ICS)
+         HILFSFUNKTIONEN (DATUM, ZEIT-BADGES, ERGEBNIS, GEBURTSTAGE, ICS)
          ---------------------------------------------------------------------- */
       function pad2(num) {
         return String(num).padStart(2, '0');
@@ -1410,6 +1481,79 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         return evt.title || '';
       }
 
+      /* Ergebnis (z. B. "12:8") parsen und Gewonnen / Verloren / Unentschieden berechnen */
+      function parseMatchResult(raw) {
+        const clean = String(raw || '').trim();
+        if (!clean) return null;
+        const match = clean.match(/^(\d+)\s*[:\-]\s*(\d+)$/);
+        if (!match) {
+          return {
+            text: clean,
+            own: null,
+            opp: null,
+            outcome: '',
+            boxCls: 'bg-zinc-100 border-zinc-300 dark:bg-zinc-800/80 dark:border-zinc-700',
+            labelCls: 'text-zinc-600 dark:text-zinc-400',
+            scoreCls: 'theme-text'
+          };
+        }
+        const own = Number(match[1]);
+        const opp = Number(match[2]);
+        const text = `${own}:${opp}`;
+        if (own > opp) {
+          return {
+            text,
+            own,
+            opp,
+            outcome: 'Gewonnen',
+            boxCls: 'bg-emerald-50 border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-500/50',
+            labelCls: 'text-emerald-700 dark:text-emerald-400',
+            scoreCls: 'text-emerald-900 dark:text-emerald-200'
+          };
+        }
+        if (own < opp) {
+          return {
+            text,
+            own,
+            opp,
+            outcome: 'Verloren',
+            boxCls: 'bg-red-50 border-red-300 dark:bg-red-950/60 dark:border-red-500/50',
+            labelCls: 'text-red-700 dark:text-red-400',
+            scoreCls: 'text-red-900 dark:text-red-200'
+          };
+        }
+        return {
+          text,
+          own,
+          opp,
+          outcome: 'Unentschieden',
+          boxCls: 'bg-amber-50 border-amber-300 dark:bg-amber-950/60 dark:border-amber-500/50',
+          labelCls: 'text-amber-700 dark:text-amber-400',
+          scoreCls: 'text-amber-900 dark:text-amber-200'
+        };
+      }
+
+      function buildResultBoxHtml(resultStr, compact) {
+        const parsed = parseMatchResult(resultStr);
+        if (!parsed) return '';
+        if (compact) {
+          return `
+            <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${parsed.boxCls}">
+              ${parsed.outcome ? `<span class="text-[9px] font-extrabold uppercase tracking-wider ${parsed.labelCls}">${escapeHtml(parsed.outcome)}</span>` : ''}
+              <span class="text-xs font-black tabular-nums ${parsed.scoreCls}">${escapeHtml(parsed.text)}</span>
+            </div>
+          `;
+        }
+        return `
+          <div class="rounded-xl border px-3.5 py-2 text-center shrink-0 min-w-[92px] ${parsed.boxCls}">
+            ${parsed.outcome ? `<div class="text-[10px] font-extrabold uppercase tracking-wider leading-tight mb-0.5 ${parsed.labelCls}">${escapeHtml(parsed.outcome)}</div>` : ''}
+            <div class="text-2xl sm:text-3xl font-black tabular-nums leading-none tracking-tight ${parsed.scoreCls}">
+              ${escapeHtml(parsed.text)}
+            </div>
+          </div>
+        `;
+      }
+
       function getTeamBadgeStyle(team) {
         if (!team) return '';
         if (team.startsWith('DV Steel')) {
@@ -1422,7 +1566,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         if (!candidate.inDartraum || !candidate.date || !candidate.startTime) {
           return [];
         }
-        const DEFAULT_DURATION_MIN = 180; // Standard-Fenster (3 Std.) für Überschneidungsprüfung ohne Endzeit
+        const DEFAULT_DURATION_MIN = 180;
         const startA = timeToMinutes(candidate.startTime);
         const endA = startA + DEFAULT_DURATION_MIN;
 
@@ -1448,6 +1592,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         if (evt.team) descParts.push(`Mannschaft: ${evt.team}`);
         if (evt.homeAway) descParts.push(`Spielort: ${evt.homeAway}`);
         if (evt.opponent) descParts.push(`Gegner: ${evt.opponent}`);
+        if (evt.result) descParts.push(`Ergebnis: ${evt.result}`);
         if (evt.notes) descParts.push(`Notizen: ${evt.notes}`);
 
         const icsEscape = (val) =>
@@ -1521,7 +1666,6 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         selectedDate: todayISO,
         confirmCallback: null,
         toastTimer: null,
-        // Spielbericht-Foto-Status im Termin-Formular
         pendingReportFile: null,
         currentReportUrl: '',
         removeCurrentReportImage: false,
@@ -1611,6 +1755,10 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         startTimeInput: document.getElementById('startTimeInput'),
         inDartraumCheckbox: document.getElementById('inDartraumCheckbox'),
         locationInput: document.getElementById('locationInput'),
+        scoreOwnInput: document.getElementById('scoreOwnInput'),
+        scoreOppInput: document.getElementById('scoreOppInput'),
+        scoreLivePreview: document.getElementById('scoreLivePreview'),
+        clearScoreBtn: document.getElementById('clearScoreBtn'),
         notesInput: document.getElementById('notesInput'),
         reportImageInput: document.getElementById('reportImageInput'),
         reportImagePreviewWrap: document.getElementById('reportImagePreviewWrap'),
@@ -1676,7 +1824,6 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
       /* ----------------------------------------------------------------------
          THEME ANWENDEN (Dark Mode / Hell Mode)
-         WICHTIG: Bei SVG setAttribute('class', ...) statt .className!
          ---------------------------------------------------------------------- */
       function applyTheme(theme) {
         state.theme = theme;
@@ -1684,6 +1831,11 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         root.setAttribute('data-theme', theme);
         root.classList.toggle('dark', theme === 'dark');
         saveTheme(theme);
+
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) {
+          themeMeta.setAttribute('content', theme === 'dark' ? '#09090b' : '#f8fafc');
+        }
 
         if (theme === 'dark') {
           els.themeToggleLabel.textContent = 'Hell';
@@ -1913,7 +2065,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         TERMINKARTE ERZEUGEN (INKL. MINI-SPIELBERICHT-VORSCHAU)
+         TERMINKARTE ERZEUGEN (INKL. ERGEBNIS-BOX & MINI-SPIELBERICHT-VORSCHAU)
          ---------------------------------------------------------------------- */
       function buildEventCardHtml(evt) {
         const style = getCategoryStyle(evt.category);
@@ -1937,6 +2089,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                ⚠ Überschneidung im Dartraum
              </span>`
           : '';
+
+        const resultBoxHtml = buildResultBoxHtml(evt.result, false);
 
         const reportThumbHtml = evt.reportImageUrl
           ? `
@@ -1999,7 +2153,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                   <span>📍 ${escapeHtml(evt.location)}</span>
                 </div>
               </div>
-              <div class="flex items-center gap-3 shrink-0">
+              <div class="flex flex-wrap items-center gap-3 shrink-0">
+                ${resultBoxHtml}
                 ${reportThumbHtml}
                 ${captainControls}
               </div>
@@ -2078,7 +2233,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         RENDERING: WOCHENANSICHT (inkl. Mini-Spielbericht-Vorschau)
+         RENDERING: WOCHENANSICHT (inkl. Ergebnis & Mini-Spielbericht)
          ---------------------------------------------------------------------- */
       function renderWeekView() {
         const weekStart = state.weekStartDate;
@@ -2155,6 +2310,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                         <div class="text-xs font-extrabold theme-text leading-snug">
                           ${getEventHeadlineHtml(evt)}
                         </div>
+                        ${evt.result ? `<div class="pt-0.5">${buildResultBoxHtml(evt.result, true)}</div>` : ''}
                         <div class="flex flex-wrap items-center gap-1 pt-0.5">
                           ${evt.team ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>` : ''}
                           ${evt.homeAway ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
@@ -2237,10 +2393,11 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             .slice(0, 3)
             .map((evt) => {
               const st = getCategoryStyle(evt.category);
+              const scorePrefix = evt.result ? `${evt.result} ` : '';
               return `
                 <div class="flex items-center gap-1 truncate text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${st.badge}">
                   <span class="w-1.5 h-1.5 rounded-full ${st.dot} shrink-0"></span>
-                  <span class="truncate">${evt.reportImageUrl ? '📷 ' : ''}${escapeHtml(evt.team || evt.title)}</span>
+                  <span class="truncate">${evt.reportImageUrl ? '📷 ' : ''}${escapeHtml(scorePrefix + (evt.team || evt.title))}</span>
                 </div>
               `;
             })
@@ -2298,7 +2455,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         RENDERING: MITGLIEDER-ANSICHT (0, 1 ODER MEHRERE MANNSCHAFTEN)
+         RENDERING: MITGLIEDER-ANSICHT
          ---------------------------------------------------------------------- */
       function renderMembersView() {
         els.memberTeamFilterBar.innerHTML = buildTeamFilterHtml(
@@ -2762,6 +2919,9 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           : '';
 
         const timeLabel = `${escapeHtml(evt.startTime)} Uhr`;
+        const detailResultHtml = evt.result
+          ? `<div class="pt-1 flex justify-start">${buildResultBoxHtml(evt.result, false)}</div>`
+          : '';
 
         const reportSectionHtml = evt.reportImageUrl
           ? `
@@ -2797,6 +2957,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             ${relBadge ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>` : ''}
           </div>
           <h3 class="text-lg font-extrabold theme-text">${getEventHeadlineHtml(evt)}</h3>
+          ${detailResultHtml}
           ${overlapHtml}
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-1">
             <div class="rounded-xl theme-surface-2 border theme-border p-3">
@@ -2861,7 +3022,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         FORMULAR-LOGIK (TERMINE, SPIELBERICHT-FOTO & MITGLIEDER)
+         FORMULAR-LOGIK (TERMINE, ERGEBNIS, SPIELBERICHT-FOTO & MITGLIEDER)
          ---------------------------------------------------------------------- */
       function resetReportImageFormState(existingUrl) {
         if (state.previewObjectUrl) {
@@ -2889,6 +3050,21 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const league = isLeagueCategory(els.categoryInput.value);
         els.opponentFieldWrap.classList.toggle('hidden', !league);
         els.titleFieldWrap.classList.toggle('hidden', league);
+      }
+
+      function updateScoreLivePreview() {
+        const own = els.scoreOwnInput.value.trim();
+        const opp = els.scoreOppInput.value.trim();
+        const hasAny = own !== '' || opp !== '';
+        els.clearScoreBtn.classList.toggle('hidden', !hasAny);
+
+        if (own !== '' && opp !== '') {
+          els.scoreLivePreview.innerHTML = buildResultBoxHtml(`${own}:${opp}`, true);
+          els.scoreLivePreview.classList.remove('hidden');
+        } else {
+          els.scoreLivePreview.innerHTML = '';
+          els.scoreLivePreview.classList.add('hidden');
+        }
       }
 
       function syncDartraumCheckbox() {
@@ -2939,6 +3115,9 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           els.startTimeInput.value = evt.startTime;
           els.inDartraumCheckbox.checked = Boolean(evt.inDartraum);
           els.locationInput.value = evt.location || DARTRAUM_NAME;
+          const parsedRes = parseMatchResult(evt.result);
+          els.scoreOwnInput.value = parsedRes && parsedRes.own !== null ? String(parsedRes.own) : '';
+          els.scoreOppInput.value = parsedRes && parsedRes.opp !== null ? String(parsedRes.opp) : '';
           els.notesInput.value = evt.notes || '';
           resetReportImageFormState(evt.reportImageUrl || '');
         } else {
@@ -2953,12 +3132,15 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           els.startTimeInput.value = '19:00';
           els.inDartraumCheckbox.checked = true;
           els.locationInput.value = DARTRAUM_NAME;
+          els.scoreOwnInput.value = '';
+          els.scoreOppInput.value = '';
           els.notesInput.value = '';
           resetReportImageFormState('');
         }
 
         syncCategoryFields();
         syncDartraumCheckbox();
+        updateScoreLivePreview();
         openModal(els.formModal);
         setTimeout(() => {
           if (isLeagueCategory(els.categoryInput.value)) {
@@ -3378,6 +3560,13 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       els.inDartraumCheckbox.addEventListener('change', syncDartraumCheckbox);
       els.dateInput.addEventListener('change', updateOverlapWarning);
       els.startTimeInput.addEventListener('change', updateOverlapWarning);
+      els.scoreOwnInput.addEventListener('input', updateScoreLivePreview);
+      els.scoreOppInput.addEventListener('input', updateScoreLivePreview);
+      els.clearScoreBtn.addEventListener('click', () => {
+        els.scoreOwnInput.value = '';
+        els.scoreOppInput.value = '';
+        updateScoreLivePreview();
+      });
 
       els.eventForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -3394,6 +3583,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const startTime = els.startTimeInput.value;
         const inDartraum = els.inDartraumCheckbox.checked;
         const location = inDartraum ? DARTRAUM_NAME : els.locationInput.value.trim();
+        const scoreOwn = els.scoreOwnInput.value.trim();
+        const scoreOpp = els.scoreOppInput.value.trim();
 
         const errors = [];
         if (league && !opponent) errors.push('Bitte gib einen Gegner ein.');
@@ -3403,6 +3594,11 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         if (!inDartraum && !location) {
           errors.push('Bitte gib einen Ort bzw. eine Adresse ein.');
         }
+        if ((scoreOwn !== '' && scoreOpp === '') || (scoreOwn === '' && scoreOpp !== '')) {
+          errors.push('Bitte beim Ergebnis beide Punktzahlen (Wir und Gegner) eintragen oder beide leer lassen.');
+        }
+
+        const resultStr = scoreOwn !== '' && scoreOpp !== '' ? `${Number(scoreOwn)}:${Number(scoreOpp)}` : '';
 
         if (errors.length > 0) {
           els.formErrorBox.innerHTML = errors.map(escapeHtml).join('<br />');
@@ -3441,6 +3637,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             location,
             opponent,
             notes: els.notesInput.value.trim(),
+            result: resultStr,
             reportImageUrl: finalReportUrl
           };
 
