@@ -685,7 +685,7 @@
   </div>
 
   <!-- ======================================================================
-       MODAL 3: KAPITÄNS-LOGIN (SUPABASE E-MAIL & PASSWORT)
+       MODAL 3: KAPITÄNS-LOGIN (BENUTZERNAME & PASSWORT)
        ====================================================================== -->
   <div id="loginModal" class="fixed inset-0 z-50 theme-backdrop backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
     <div class="theme-surface border theme-border-strong rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-modal">
@@ -718,10 +718,10 @@
               </svg>
             </div>
           </div>
-          <div id="loginErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3 py-2 text-xs font-semibold"></div>
+          <div id="loginErrorBox" class="hidden rounded-xl bg-red-50 border border-red-300 text-red-800 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200 px-3 py-2 text-xs font-semibold leading-relaxed"></div>
           <div>
-            <label for="loginEmailInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">E-Mail-Adresse</label>
-            <input type="email" id="loginEmailInput" required autocomplete="email" placeholder="kapitaen@dartverein-kirchschlag.at" class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+            <label for="loginEmailInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Benutzername oder E-Mail</label>
+            <input type="text" id="loginEmailInput" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="z. B. max oder kapitaen@..." class="w-full px-3.5 py-2.5 rounded-xl border theme-input text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
           <div>
             <label for="loginPasswordInput" class="block text-xs font-bold uppercase tracking-wide theme-text-secondary mb-1">Passwort</label>
@@ -907,6 +907,7 @@
       const TABLE_NAME = 'termine';
       const MEMBERS_TABLE_NAME = 'mitglieder';
       const REPORT_BUCKET = 'spielberichte';
+      const USERNAME_DOMAIN = '@dvk.local';
 
       const THEME_STORAGE_KEY = 'dvk_kalender_theme';
       const DARTRAUM_NAME = 'Dartraum Kirchschlag';
@@ -987,6 +988,67 @@
       ];
 
       const WEEKDAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+      /* ----------------------------------------------------------------------
+         ERGEBNIS-HILFSFUNKTIONEN (z. B. "12:8" -> Gewonnen / Verloren / Unentschieden)
+         ---------------------------------------------------------------------- */
+      function parseScore(raw) {
+        if (!raw) return null;
+        const match = String(raw).trim().match(/^(\d+)\s*[:\-]\s*(\d+)$/);
+        if (!match) return null;
+
+        const own = Number(match[1]);
+        const opp = Number(match[2]);
+        if (Number.isNaN(own) || Number.isNaN(opp)) return null;
+
+        let status = 'Unentschieden';
+        let boxCls = 'bg-amber-50 border-amber-300 text-amber-950 dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-200';
+        let statusCls = 'text-amber-700 dark:text-amber-300';
+
+        if (own > opp) {
+          status = 'Gewonnen';
+          boxCls = 'bg-emerald-50 border-emerald-300 text-emerald-950 dark:bg-emerald-500/15 dark:border-emerald-500/40 dark:text-emerald-200';
+          statusCls = 'text-emerald-700 dark:text-emerald-400';
+        } else if (own < opp) {
+          status = 'Verloren';
+          boxCls = 'bg-red-50 border-red-300 text-red-950 dark:bg-red-500/15 dark:border-red-500/40 dark:text-red-200';
+          statusCls = 'text-red-700 dark:text-red-400';
+        }
+
+        return {
+          own,
+          opp,
+          text: `${own}:${opp}`,
+          status,
+          boxCls,
+          statusCls
+        };
+      }
+
+      function buildScoreCardBadgeHtml(rawScore, compact) {
+        const parsed = parseScore(rawScore);
+        if (!parsed) return '';
+
+        if (compact) {
+          return `
+            <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${parsed.boxCls}">
+              <span class="text-[9px] font-extrabold uppercase tracking-wider ${parsed.statusCls}">${parsed.status}</span>
+              <span class="text-xs font-black tabular-nums leading-none">${escapeHtml(parsed.text)}</span>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="flex flex-col items-center justify-center px-3.5 py-2 rounded-xl border ${parsed.boxCls} min-w-[88px] shrink-0 shadow-sm">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider leading-none ${parsed.statusCls}">
+              ${parsed.status}
+            </span>
+            <span class="text-xl sm:text-2xl font-black tracking-tight tabular-nums leading-tight mt-0.5">
+              ${escapeHtml(parsed.text)}
+            </span>
+          </div>
+        `;
+      }
 
       /* ----------------------------------------------------------------------
          BILD-KOMPRIMIERUNG (CANVAS) & SUPABASE STORAGE FÜR SPIELBERICHTE
@@ -1112,7 +1174,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         HILFSFUNKTIONEN: MANNSCHAFTEN & FUNKTIONEN PARSEN
+         HILFSFUNKTION: MANNSCHAFTEN & FUNKTIONEN PARSEN
          ---------------------------------------------------------------------- */
       function parseTeams(raw) {
         if (!raw) return [];
@@ -1151,8 +1213,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           location: row.location || (isDartraum ? DARTRAUM_NAME : ''),
           opponent: row.opponent || '',
           notes: row.notes || '',
-          result: row.ergebnis || '',
-          reportImageUrl: row.spielbericht_url || ''
+          reportImageUrl: row.spielbericht_url || '',
+          score: row.ergebnis || ''
         };
       }
 
@@ -1169,8 +1231,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           is_dartraum: Boolean(evt.inDartraum),
           location: evt.inDartraum ? DARTRAUM_NAME : evt.location,
           notes: evt.notes || null,
-          ergebnis: evt.result || null,
-          spielbericht_url: evt.reportImageUrl || null
+          spielbericht_url: evt.reportImageUrl || null,
+          ergebnis: evt.score || null
         };
       }
 
@@ -1312,7 +1374,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         HILFSFUNKTIONEN (DATUM, ZEIT-BADGES, ERGEBNIS, GEBURTSTAGE, ICS)
+         HILFSFUNKTIONEN (DATUM, ZEIT-BADGES, GEBURTSTAGE, LOGIN, ICS)
          ---------------------------------------------------------------------- */
       function pad2(num) {
         return String(num).padStart(2, '0');
@@ -1461,6 +1523,22 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           .replace(/'/g, '&#39;');
       }
 
+      /* Benutzernamen ohne "@" intern in eine Supabase-Kennung umwandeln */
+      function normalizeLoginIdentifier(raw) {
+        const clean = String(raw || '').trim().toLowerCase();
+        if (!clean) return '';
+        return clean.includes('@') ? clean : `${clean}${USERNAME_DOMAIN}`;
+      }
+
+      /* Internes "@dvk.local" in der Statusleiste ausblenden */
+      function formatCaptainDisplayName(email) {
+        if (!email) return '';
+        if (email.toLowerCase().endsWith(USERNAME_DOMAIN)) {
+          return email.slice(0, -USERNAME_DOMAIN.length);
+        }
+        return email;
+      }
+
       function getCategoryStyle(category) {
         return CATEGORY_STYLES[category] || CATEGORY_STYLES['Sonstiges'];
       }
@@ -1481,79 +1559,6 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         return evt.title || '';
       }
 
-      /* Ergebnis (z. B. "12:8") parsen und Gewonnen / Verloren / Unentschieden berechnen */
-      function parseMatchResult(raw) {
-        const clean = String(raw || '').trim();
-        if (!clean) return null;
-        const match = clean.match(/^(\d+)\s*[:\-]\s*(\d+)$/);
-        if (!match) {
-          return {
-            text: clean,
-            own: null,
-            opp: null,
-            outcome: '',
-            boxCls: 'bg-zinc-100 border-zinc-300 dark:bg-zinc-800/80 dark:border-zinc-700',
-            labelCls: 'text-zinc-600 dark:text-zinc-400',
-            scoreCls: 'theme-text'
-          };
-        }
-        const own = Number(match[1]);
-        const opp = Number(match[2]);
-        const text = `${own}:${opp}`;
-        if (own > opp) {
-          return {
-            text,
-            own,
-            opp,
-            outcome: 'Gewonnen',
-            boxCls: 'bg-emerald-50 border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-500/50',
-            labelCls: 'text-emerald-700 dark:text-emerald-400',
-            scoreCls: 'text-emerald-900 dark:text-emerald-200'
-          };
-        }
-        if (own < opp) {
-          return {
-            text,
-            own,
-            opp,
-            outcome: 'Verloren',
-            boxCls: 'bg-red-50 border-red-300 dark:bg-red-950/60 dark:border-red-500/50',
-            labelCls: 'text-red-700 dark:text-red-400',
-            scoreCls: 'text-red-900 dark:text-red-200'
-          };
-        }
-        return {
-          text,
-          own,
-          opp,
-          outcome: 'Unentschieden',
-          boxCls: 'bg-amber-50 border-amber-300 dark:bg-amber-950/60 dark:border-amber-500/50',
-          labelCls: 'text-amber-700 dark:text-amber-400',
-          scoreCls: 'text-amber-900 dark:text-amber-200'
-        };
-      }
-
-      function buildResultBoxHtml(resultStr, compact) {
-        const parsed = parseMatchResult(resultStr);
-        if (!parsed) return '';
-        if (compact) {
-          return `
-            <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${parsed.boxCls}">
-              ${parsed.outcome ? `<span class="text-[9px] font-extrabold uppercase tracking-wider ${parsed.labelCls}">${escapeHtml(parsed.outcome)}</span>` : ''}
-              <span class="text-xs font-black tabular-nums ${parsed.scoreCls}">${escapeHtml(parsed.text)}</span>
-            </div>
-          `;
-        }
-        return `
-          <div class="rounded-xl border px-3.5 py-2 text-center shrink-0 min-w-[92px] ${parsed.boxCls}">
-            ${parsed.outcome ? `<div class="text-[10px] font-extrabold uppercase tracking-wider leading-tight mb-0.5 ${parsed.labelCls}">${escapeHtml(parsed.outcome)}</div>` : ''}
-            <div class="text-2xl sm:text-3xl font-black tabular-nums leading-none tracking-tight ${parsed.scoreCls}">
-              ${escapeHtml(parsed.text)}
-            </div>
-          </div>
-        `;
-      }
-
       function getTeamBadgeStyle(team) {
         if (!team) return '';
         if (team.startsWith('DV Steel')) {
@@ -1566,7 +1571,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         if (!candidate.inDartraum || !candidate.date || !candidate.startTime) {
           return [];
         }
-        const DEFAULT_DURATION_MIN = 180;
+        const DEFAULT_DURATION_MIN = 180; // Standard-Fenster (3 Std.) für Überschneidungsprüfung ohne Endzeit
         const startA = timeToMinutes(candidate.startTime);
         const endA = startA + DEFAULT_DURATION_MIN;
 
@@ -1588,11 +1593,12 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const now = new Date();
         const stamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}Z`;
 
+        const parsedScore = parseScore(evt.score);
         const descParts = [`Kategorie: ${evt.category}`];
         if (evt.team) descParts.push(`Mannschaft: ${evt.team}`);
         if (evt.homeAway) descParts.push(`Spielort: ${evt.homeAway}`);
         if (evt.opponent) descParts.push(`Gegner: ${evt.opponent}`);
-        if (evt.result) descParts.push(`Ergebnis: ${evt.result}`);
+        if (parsedScore) descParts.push(`Ergebnis: ${parsedScore.text} (${parsedScore.status})`);
         if (evt.notes) descParts.push(`Notizen: ${evt.notes}`);
 
         const icsEscape = (val) =>
@@ -1666,6 +1672,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         selectedDate: todayISO,
         confirmCallback: null,
         toastTimer: null,
+        // Spielbericht-Foto-Status im Termin-Formular
         pendingReportFile: null,
         currentReportUrl: '',
         removeCurrentReportImage: false,
@@ -1832,9 +1839,9 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         root.classList.toggle('dark', theme === 'dark');
         saveTheme(theme);
 
-        const themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeMeta) {
-          themeMeta.setAttribute('content', theme === 'dark' ? '#09090b' : '#f8fafc');
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', theme === 'dark' ? '#09090b' : '#f8fafc');
         }
 
         if (theme === 'dark') {
@@ -1903,7 +1910,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         els.captainBanner.classList.toggle('hidden', !state.captainMode);
         els.addEventOnDayBtn.classList.toggle('hidden', !state.captainMode);
         els.newMemberBtn.classList.toggle('hidden', !state.captainMode);
-        els.captainUserEmail.textContent = state.captainUser?.email ? `(${state.captainUser.email})` : '';
+        const captainLabel = formatCaptainDisplayName(state.captainUser?.email);
+        els.captainUserEmail.textContent = captainLabel ? `(${captainLabel})` : '';
 
         if (state.captainMode) {
           els.captainModeBtn.className =
@@ -2065,7 +2073,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       }
 
       /* ----------------------------------------------------------------------
-         TERMINKARTE ERZEUGEN (INKL. ERGEBNIS-BOX & MINI-SPIELBERICHT-VORSCHAU)
+         TERMINKARTE ERZEUGEN (INKL. GROSSER ERGEBNIS-BOX & MINI-SPIELBERICHT)
          ---------------------------------------------------------------------- */
       function buildEventCardHtml(evt) {
         const style = getCategoryStyle(evt.category);
@@ -2090,7 +2098,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
              </span>`
           : '';
 
-        const resultBoxHtml = buildResultBoxHtml(evt.result, false);
+        const scoreBoxHtml = buildScoreCardBadgeHtml(evt.score, false);
 
         const reportThumbHtml = evt.reportImageUrl
           ? `
@@ -2133,7 +2141,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         return `
           <article
             data-open-event="${escapeHtml(evt.id)}"
-            class="group cursor-pointer theme-surface border theme-border border-l-4 ${style.accent} rounded-2xl p-4 hover:shadow-md transition-all ${isPast ? 'opacity-70' : ''}"
+            class="group cursor-pointer theme-surface border theme-border border-l-4 ${style.accent} rounded-2xl p-4 hover:shadow-md transition-all ${isPast ? 'opacity-80' : ''}"
           >
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="space-y-1.5 min-w-0 flex-1">
@@ -2154,7 +2162,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                 </div>
               </div>
               <div class="flex flex-wrap items-center gap-3 shrink-0">
-                ${resultBoxHtml}
+                ${scoreBoxHtml}
                 ${reportThumbHtml}
                 ${captainControls}
               </div>
@@ -2280,6 +2288,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                     const st = getCategoryStyle(evt.category);
                     const overlap = findDartraumOverlaps(evt, evt.id).length > 0;
                     const timeText = `${evt.startTime} Uhr`;
+                    const compactScoreHtml = buildScoreCardBadgeHtml(evt.score, true);
                     const miniThumb = evt.reportImageUrl
                       ? `
                         <div class="pt-1.5">
@@ -2310,11 +2319,11 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
                         <div class="text-xs font-extrabold theme-text leading-snug">
                           ${getEventHeadlineHtml(evt)}
                         </div>
-                        ${evt.result ? `<div class="pt-0.5">${buildResultBoxHtml(evt.result, true)}</div>` : ''}
                         <div class="flex flex-wrap items-center gap-1 pt-0.5">
                           ${evt.team ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">${escapeHtml(evt.team)}</span>` : ''}
                           ${evt.homeAway ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${evt.homeAway === 'Heim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300'}">${escapeHtml(evt.homeAway)}</span>` : ''}
                         </div>
+                        ${compactScoreHtml ? `<div class="pt-1">${compactScoreHtml}</div>` : ''}
                         <div class="text-[10px] theme-text-muted truncate">📍 ${escapeHtml(evt.location)}</div>
                         ${miniThumb}
                       </div>
@@ -2393,7 +2402,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             .slice(0, 3)
             .map((evt) => {
               const st = getCategoryStyle(evt.category);
-              const scorePrefix = evt.result ? `${evt.result} ` : '';
+              const parsedScore = parseScore(evt.score);
+              const scorePrefix = parsedScore ? `${parsedScore.text} ` : '';
               return `
                 <div class="flex items-center gap-1 truncate text-[10px] sm:text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${st.badge}">
                   <span class="w-1.5 h-1.5 rounded-full ${st.dot} shrink-0"></span>
@@ -2908,6 +2918,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const style = getCategoryStyle(evt.category);
         const overlaps = findDartraumOverlaps(evt, evt.id);
         const relBadge = getRelativeDateBadge(evt.date);
+        const parsedScore = parseScore(evt.score);
 
         const overlapHtml = overlaps.length > 0
           ? `
@@ -2918,10 +2929,23 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           `
           : '';
 
-        const timeLabel = `${escapeHtml(evt.startTime)} Uhr`;
-        const detailResultHtml = evt.result
-          ? `<div class="pt-1 flex justify-start">${buildResultBoxHtml(evt.result, false)}</div>`
+        const scoreDetailHtml = parsedScore
+          ? `
+            <div class="rounded-2xl border p-4 flex items-center justify-between gap-3 ${parsedScore.boxCls}">
+              <div>
+                <div class="text-[11px] font-bold uppercase tracking-wider opacity-80">Endergebnis</div>
+                <div class="text-sm font-extrabold uppercase tracking-wide mt-0.5 ${parsedScore.statusCls}">
+                  ${parsedScore.status}
+                </div>
+              </div>
+              <div class="text-3xl font-black tracking-tight tabular-nums">
+                ${escapeHtml(parsedScore.text)}
+              </div>
+            </div>
+          `
           : '';
+
+        const timeLabel = `${escapeHtml(evt.startTime)} Uhr`;
 
         const reportSectionHtml = evt.reportImageUrl
           ? `
@@ -2957,7 +2981,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             ${relBadge ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${relBadge.cls}">${relBadge.label}</span>` : ''}
           </div>
           <h3 class="text-lg font-extrabold theme-text">${getEventHeadlineHtml(evt)}</h3>
-          ${detailResultHtml}
+          ${scoreDetailHtml}
           ${overlapHtml}
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm pt-1">
             <div class="rounded-xl theme-surface-2 border theme-border p-3">
@@ -3024,6 +3048,24 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       /* ----------------------------------------------------------------------
          FORMULAR-LOGIK (TERMINE, ERGEBNIS, SPIELBERICHT-FOTO & MITGLIEDER)
          ---------------------------------------------------------------------- */
+      function updateScoreLivePreview() {
+        const ownVal = els.scoreOwnInput.value.trim();
+        const oppVal = els.scoreOppInput.value.trim();
+        const hasAny = ownVal !== '' || oppVal !== '';
+        els.clearScoreBtn.classList.toggle('hidden', !hasAny);
+
+        if (ownVal !== '' && oppVal !== '') {
+          const previewHtml = buildScoreCardBadgeHtml(`${ownVal}:${oppVal}`, true);
+          if (previewHtml) {
+            els.scoreLivePreview.innerHTML = previewHtml;
+            els.scoreLivePreview.classList.remove('hidden');
+            return;
+          }
+        }
+        els.scoreLivePreview.innerHTML = '';
+        els.scoreLivePreview.classList.add('hidden');
+      }
+
       function resetReportImageFormState(existingUrl) {
         if (state.previewObjectUrl) {
           URL.revokeObjectURL(state.previewObjectUrl);
@@ -3050,21 +3092,6 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         const league = isLeagueCategory(els.categoryInput.value);
         els.opponentFieldWrap.classList.toggle('hidden', !league);
         els.titleFieldWrap.classList.toggle('hidden', league);
-      }
-
-      function updateScoreLivePreview() {
-        const own = els.scoreOwnInput.value.trim();
-        const opp = els.scoreOppInput.value.trim();
-        const hasAny = own !== '' || opp !== '';
-        els.clearScoreBtn.classList.toggle('hidden', !hasAny);
-
-        if (own !== '' && opp !== '') {
-          els.scoreLivePreview.innerHTML = buildResultBoxHtml(`${own}:${opp}`, true);
-          els.scoreLivePreview.classList.remove('hidden');
-        } else {
-          els.scoreLivePreview.innerHTML = '';
-          els.scoreLivePreview.classList.add('hidden');
-        }
       }
 
       function syncDartraumCheckbox() {
@@ -3115,9 +3142,9 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           els.startTimeInput.value = evt.startTime;
           els.inDartraumCheckbox.checked = Boolean(evt.inDartraum);
           els.locationInput.value = evt.location || DARTRAUM_NAME;
-          const parsedRes = parseMatchResult(evt.result);
-          els.scoreOwnInput.value = parsedRes && parsedRes.own !== null ? String(parsedRes.own) : '';
-          els.scoreOppInput.value = parsedRes && parsedRes.opp !== null ? String(parsedRes.opp) : '';
+          const parsedScore = parseScore(evt.score);
+          els.scoreOwnInput.value = parsedScore ? String(parsedScore.own) : '';
+          els.scoreOppInput.value = parsedScore ? String(parsedScore.opp) : '';
           els.notesInput.value = evt.notes || '';
           resetReportImageFormState(evt.reportImageUrl || '');
         } else {
@@ -3268,7 +3295,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         renderWeekView();
       });
 
-      // Globaler Lightbox-Klick-Handler (Liste, Woche, Monat & Detail-Modal)
+      // Globaler Lightbox-Klick-Handler (Liste, Woche, Monat, Header & Detail-Modal)
       document.addEventListener('click', (e) => {
         const lightboxTrigger = e.target.closest('[data-open-lightbox]');
         if (lightboxTrigger) {
@@ -3352,6 +3379,15 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       els.listViewContainer.addEventListener('click', handleEventContainerClick);
       els.selectedDayList.addEventListener('click', handleEventContainerClick);
 
+      // Ergebnis-Eingabe Live-Vorschau
+      els.scoreOwnInput.addEventListener('input', updateScoreLivePreview);
+      els.scoreOppInput.addEventListener('input', updateScoreLivePreview);
+      els.clearScoreBtn.addEventListener('click', () => {
+        els.scoreOwnInput.value = '';
+        els.scoreOppInput.value = '';
+        updateScoreLivePreview();
+      });
+
       // Spielbericht-Foto-Auswahl im Termin-Formular
       els.reportImageInput.addEventListener('change', () => {
         const file = els.reportImageInput.files && els.reportImageInput.files[0];
@@ -3376,7 +3412,7 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
 
       els.reportImagePreview.addEventListener('click', () => {
         if (els.reportImagePreview.src) {
-          openLightbox(els.reportImagePreview.src, els.titleInput.value.trim() || 'Vorschau');
+          openLightbox(els.reportImagePreview.src, els.opponentInput.value.trim() || els.titleInput.value.trim() || 'Vorschau');
         }
       });
 
@@ -3513,14 +3549,16 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
         e.preventDefault();
         if (!supabaseClient) return;
 
-        const email = els.loginEmailInput.value.trim();
+        const rawIdentifier = els.loginEmailInput.value.trim();
         const password = els.loginPasswordInput.value;
 
-        if (!email || !password) {
-          els.loginErrorBox.textContent = 'Bitte E-Mail-Adresse und Passwort eingeben.';
+        if (!rawIdentifier || !password) {
+          els.loginErrorBox.textContent = 'Bitte Benutzername und Passwort eingeben.';
           els.loginErrorBox.classList.remove('hidden');
           return;
         }
+
+        const email = normalizeLoginIdentifier(rawIdentifier);
 
         els.loginErrorBox.classList.add('hidden');
         els.loginSubmitBtn.disabled = true;
@@ -3536,8 +3574,18 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           renderAll();
           showToast('Erfolgreich als Kapitän angemeldet');
         } catch (err) {
-          console.error('Login-Fehler:', err);
-          els.loginErrorBox.textContent = 'Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen.';
+          // Erwartete Login-Fehler sauber im UI anzeigen statt als Konsolenfehler
+          const msg = String(err?.message || '').toLowerCase();
+          if (msg.includes('email not confirmed')) {
+            els.loginErrorBox.textContent =
+              'Dieser Zugang ist in Supabase noch nicht bestätigt. Bitte in Supabase unter Authentication → Users „Auto Confirm User“ aktivieren.';
+          } else if (!rawIdentifier.includes('@')) {
+            els.loginErrorBox.innerHTML =
+              `Anmeldung fehlgeschlagen. Prüfe Passwort und stelle sicher, dass der Benutzer in Supabase als <strong>${escapeHtml(email)}</strong> (mit „Auto Confirm User“) angelegt ist – oder melde dich mit deiner vollständigen E-Mail-Adresse an.`;
+          } else {
+            els.loginErrorBox.textContent =
+              'Anmeldung fehlgeschlagen. Bitte E-Mail-Adresse und Passwort prüfen.';
+          }
           els.loginErrorBox.classList.remove('hidden');
           els.loginPasswordInput.select();
         } finally {
@@ -3560,13 +3608,6 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
       els.inDartraumCheckbox.addEventListener('change', syncDartraumCheckbox);
       els.dateInput.addEventListener('change', updateOverlapWarning);
       els.startTimeInput.addEventListener('change', updateOverlapWarning);
-      els.scoreOwnInput.addEventListener('input', updateScoreLivePreview);
-      els.scoreOppInput.addEventListener('input', updateScoreLivePreview);
-      els.clearScoreBtn.addEventListener('click', () => {
-        els.scoreOwnInput.value = '';
-        els.scoreOppInput.value = '';
-        updateScoreLivePreview();
-      });
 
       els.eventForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -3595,10 +3636,19 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
           errors.push('Bitte gib einen Ort bzw. eine Adresse ein.');
         }
         if ((scoreOwn !== '' && scoreOpp === '') || (scoreOwn === '' && scoreOpp !== '')) {
-          errors.push('Bitte beim Ergebnis beide Punktzahlen (Wir und Gegner) eintragen oder beide leer lassen.');
+          errors.push('Bitte beim Ergebnis beide Punktzahlen (Wir und Gegner) angeben oder beide Felder leer lassen.');
         }
 
-        const resultStr = scoreOwn !== '' && scoreOpp !== '' ? `${Number(scoreOwn)}:${Number(scoreOpp)}` : '';
+        let formattedScore = '';
+        if (scoreOwn !== '' && scoreOpp !== '') {
+          const ownNum = Number(scoreOwn);
+          const oppNum = Number(scoreOpp);
+          if (!Number.isInteger(ownNum) || ownNum < 0 || !Number.isInteger(oppNum) || oppNum < 0) {
+            errors.push('Bitte beim Ergebnis nur ganze Zahlen ab 0 eingeben.');
+          } else {
+            formattedScore = `${ownNum}:${oppNum}`;
+          }
+        }
 
         if (errors.length > 0) {
           els.formErrorBox.innerHTML = errors.map(escapeHtml).join('<br />');
@@ -3637,8 +3687,8 @@ create policy "Kapitäne dürfen Spielberichte löschen" on storage.objects for 
             location,
             opponent,
             notes: els.notesInput.value.trim(),
-            result: resultStr,
-            reportImageUrl: finalReportUrl
+            reportImageUrl: finalReportUrl,
+            score: formattedScore
           };
 
           if (existingId) {
